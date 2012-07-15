@@ -38,7 +38,7 @@ const speak = function( msg, prefix, query, index, person ) {
 // Implement Plugin interface.
 
 const load = function( bot ) {
-  bot.lookFor( /^:([\/.,`?]?)g(?:oogle)? +([^#@]+)(?: *#([1-9]))?(?: *@ *([-\[\]\{\}`|_\w]+))? *$/, speak )
+  bot.lookFor( /^:([\/.,`?]?)g +([^#@]+)(?: *#([1-9]))?(?: *@ *([-\[\]\{\}`|_\w]+))? *$/, speak )
   return irc.STATUS.SUCCESS
 }
 

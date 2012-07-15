@@ -12,7 +12,7 @@ const botT = irc.person( "bot-t" )
     , botTPrefix = "?"
 
 const search = function( query, hb ) {
-  exec( fmt( "curl -e 'http://gf3.ca/' 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=%s'", escape( query ) )
+  exec( fmt( "curl -e 'http://gf3.ca/' 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&q=%s'", encodeURIComponent( query ) )
        , function ( err, stdout, stderr ) {
          const results = JSON.parse( stdout ).responseData.results
          hb.call( null, results )

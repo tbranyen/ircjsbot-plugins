@@ -28,7 +28,7 @@ const speak = function( msg, prefix, query, index, person ) {
     if ( results.length )
       msg.reply( fmt( "%s, %s → %s"
                      , ( person || msg.from.nick ).trim()
-                     , unescapeAll( results[index].titleNoFormatting )
+                     , unescape( results[index].titleNoFormatting )
                      , results[res].unescapedUrl ) )
     else
       msg.reply( fmt( "%s, sorry, no results for ‟%s”", msg.from.nick, query ) )

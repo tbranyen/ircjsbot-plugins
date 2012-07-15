@@ -4,6 +4,7 @@
 
 const fmt      = require( "util" ).format
     , irc      = require( "irc-js" )
+    , exec     = require( "child_process" ).exec
     , unescape = require( "./shared" ).unescape
 
 // An object for good old bot-t, handy for checking its presence

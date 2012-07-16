@@ -25,12 +25,14 @@ const speak = function( msg, prefix, query, index, person ) {
       .people.has( botT.id ) )
     return
 
+  const idx = index || 0
+
   search( query, function( results ) {
     if ( results.length )
       msg.reply( fmt( "%s, %s → %s"
                      , ( person || msg.from.nick ).trim()
-                     , unescape( results[index].titleNoFormatting )
-                     , results[res].unescapedUrl ) )
+                     , unescape( results[idx].titleNoFormatting )
+                     , results[idx].unescapedUrl ) )
     else
       msg.reply( fmt( "%s, sorry, no results for ‟%s”", msg.from.nick, query ) )
   } )

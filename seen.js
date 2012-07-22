@@ -100,7 +100,7 @@ const load = function( client ) {
   client.listen( irc.EVENT.ANY, seen.store.bind( seen ) )
   client.listen( irc.COMMAND.PRIVMSG )
         .filter( shared.filter.forMe.bind( null, client ) )
-        .match( /^:(?:\S+)?\W?\s+seen\s+(\S+)\W?(?:\s+(\d+))?\s*$/i )
+        .match( /^:(?:\S+)?\W?\bseen\s+(\S+)\W?(?:\s+(\d+))?\s*$/i )
         .receive( seen.seen.bind( seen ) )
   return irc.STATUS.SUCCESS
 }

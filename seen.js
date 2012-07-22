@@ -1,50 +1,34 @@
 /** @module seen
  */
 
-const redis = require( "redis" )
-    , fmt   = require( "util" ).format
-    , irc   = require( "irc-js" )
-    , share = require( "./shared" )
+const fmt     = require( "util" ).format
+    , irc     = require( "irc-js" )
+    , shared  = require( "./shared" )
 
-const TOKEN = share.redis.TOKEN
-    , HOST  = share.redis.HOST
-    , PORT  = share.redis.PORT
-
-const getKey = function( id ) {
-  return share.redis.key( id, "SEEN" )
-}
-
-const log = irc.logger.get( "ircjs-plugin-seen" )
+const log         = irc.logger.get( "ircjs-plugin-seen" )
+    , redisClient = shared.redis.client
 
 var seenInstance = null
 
-const Seen = function( bot ) {
+const Seen = function( client ) {
   if ( seenInstance )
     return seenInstance
-  seenInstance = this
-  this.client = redis.createClient( PORT, HOST )
-  this.bot = bot
-
-  this.client.auth( TOKEN )
-  this.client.on( share.redis.EVENT.ERROR, this.error.bind( this ) )
-}
-
-Seen.prototype.error = function( err ) {
-  log.error( "Seen Redis client error: %s", err )
+  seenInstance  = this
+  this.client   = client
 }
 
 Seen.prototype.seen = function( msg, name, num ) {
-  const key = getKey( irc.id( name ) )
+  const key = shared.redis.key( irc.id( name ), "SEEN" )
       // Bonus feature: ask for log entry at specific index
       , ix  = num || 0
   if ( msg.from.nick === name )
     msg.reply( "%s, I see you right now, here in %s.", msg.from.nick
-             , this.bot.user.nick === msg.params[0] ? "our cozy private chat" : msg.params[0] )
-  else if ( this.bot.user.nick === name )
+             , this.client.user.nick === msg.params[0] ? "our cozy private chat" : msg.params[0] )
+  else if ( this.client.user.nick === name )
     msg.reply( "%s, I am here with you in %s.", msg.from.nick
-             , this.bot.user.nick === msg.params[0] ? "our sexy private chat" : msg.params[0] )
+             , this.client.user.nick === msg.params[0] ? "our sexy private chat" : msg.params[0] )
   else
-    this.client.lindex( key, ix, this.reply.bind( this, msg, name ) )
+    redisClient.lindex( key, ix, this.reply.bind( this, msg, name ) )
   return irc.STATUS.STOP
 }
 
@@ -63,7 +47,7 @@ Seen.prototype.reply = function( msg, name, err, res ) {
   const parts = res.match( /^(\d+)(.+)/ )
       , date  = new Date( Number( parts[1] ) )
       , mesg  = irc.parser.message( parts[2] + "\r\n" )
-      , ago   = share.timeAgo( date )
+      , ago   = shared.timeAgo( date )
   if ( ! mesg )
     return msg.reply( "%s, WTF, could not parse this: %s", msg.from.nick, parts[2] )
 
@@ -104,29 +88,28 @@ Seen.prototype.reply = function( msg, name, err, res ) {
 Seen.prototype.store = function( msg ) {
   if ( ! ( msg.from instanceof irc.Person ) )
     return
-  const key = getKey( msg.from.id )
+  const key = shared.redis.key( msg.from.id, "SEEN" )
       , val = Number( msg.date ) + msg
-  this.client.lpush( key, val )
+  redisClient.lpush( key, val )
 }
 
 // Implement Plugin interface.
 
 const load = function( client ) {
-  const s = new Seen( client )
-  client.observe( irc.EVENT.ANY, s.store.bind( s ) )
-  client.lookFor( fmt( "^:(?:\\b%s\\b[\\s,:]+|[@!\\/?\\.])seen +([-`_\\{\\}\\[\\]\\^\\|\\\\a-z0-9]+)(?: +(\\d+))?"
-                     , client.user.nick )
-                , s.seen.bind( s ) )
+  const seen = new Seen( client )
+  client.listen( irc.EVENT.ANY, seen.store.bind( seen ) )
+  client.listen( irc.COMMAND.PRIVMSG )
+        .filter( shared.filter.forMe.bind( null, client ) )
+        .match( /^:(?:\S+)?\W?\s+seen\s+(\S+)\W?(?:\s+(\d+))?\s*$/i )
+        .receive( seen.seen.bind( seen ) )
   return irc.STATUS.SUCCESS
 }
 
-const eject = function() {
-  if ( seenInstance )
-    seenInstance.client.quit()
+const unload = function() {
   seenInstance = null
   return irc.STATUS.SUCCESS
 }
 
-exports.name  = "Seen"
-exports.load  = load
-exports.eject = eject
+exports.name    = "Seen"
+exports.load    = load
+exports.unload  = unload

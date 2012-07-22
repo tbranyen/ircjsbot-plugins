@@ -1,41 +1,15 @@
-const redis = require( "redis" )
-    , fmt   = require( "util" ).format
-    , https = require( "https" )
-    , irc   = require( "irc-js" )
-    , share = require( "./shared" )
+const fmt     = require( "util" ).format
+    , irc     = require( "irc-js" )
+    , shared  = require( "./shared" )
 
-const TOKEN = share.redis.TOKEN
-    , HOST  = share.redis.HOST
-    , PORT  = share.redis.PORT
+const log     = irc.logger.get( "ircjs-plugin-wat" )
+    , watURL  = { host: "raw.github.com", path: "/gf3/WAT/master/wat.json" }
+    , sKey    = "WAT"
 
-const log   = irc.logger.get( "ircjs-plugin-wat" )
-    , sKey  = "WAT"
-
-var rc = null
-
-const handleError = function( err ) {
-  log.error( "Wat Redis client error: %s", err )
-}
-
-// Go get the latest JSON
-const getJson = function() {
-  https.get( { host: "raw.github.com", path: "/gf3/WAT/master/wat.json" }
-    , function( res ) {
-        const data = []
-        res.on( irc.NODE.SOCKET.EVENT.DATA, function( d ) {
-          data.push( d )
-        } )
-        res.on( irc.NODE.SOCKET.EVENT.END, function() {
-          const arr = JSON.parse( data.join( '' ) )
-          log.debug( "Got wat JSON: %s thingies", arr.length )
-          rc.sadd( sKey, arr )
-        } )
-  } )
-}
+const redisClient = shared.redis.client
 
 const onWat = function( msg ) {
-  log.debug( "onWat triggered" )
-  rc.srandmember( sKey, function( err, res ) {
+  redisClient.srandmember( sKey, function( err, res ) {
     if ( err ) {
       log.error( "onWat error: %s", err )
       return
@@ -46,24 +20,18 @@ const onWat = function( msg ) {
 }
 
 const load = function( bot ) {
-  if ( rc )
-    return irc.STATUS.SUCCESS
-  rc = redis.createClient( PORT, HOST )
-  rc.auth( TOKEN )
-  rc.on( share.redis.EVENT.ERROR, handleError )
-  bot.lookFor( /\bw[au]t\b/i, onWat )
-  getJson()
+  shared.getJSON( watURL, function( data ) {
+    log.debug( "Got wat JSON: %s thingies", data.length )
+    redisClient.sadd( sKey, data )
+  } )
+  bot.match( /^:w[au]t\W*$/i, onWat )
   return irc.STATUS.SUCCESS
 }
 
-const eject = function() {
-  if ( rc )
-    rc.quit()
+const unload = function() {
   return irc.STATUS.SUCCESS
 }
 
-module.exports =
-  { name:   "Wat"
-  , load:   load
-  , eject:  eject
-  }
+exports.name    = "Wat!"
+exports.load    = load
+exports.unload  = unload

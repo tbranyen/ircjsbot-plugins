@@ -1,5 +1,14 @@
-const fmt = require( "util" ).format
-    , irc = require( "irc-js" )
+/** @module shared
+ *  Stuff shared between multiple plugins.
+ */
+
+const redis = require( "redis" )
+    , https = require( "https" )
+    , fmt   = require( "util" ).format
+    , irc   = require( "irc-js" )
+
+
+const log = irc.logger.get( "ircjs-plugin-shared" )
 
 // Redis stuff
 const TOKEN = "ff774f90da063a0dfa783172f16af4e3"
@@ -17,11 +26,36 @@ const STATUS =
     , SUCCESS: 1
     }
 
-const getKey = function( nick, prefix ) {
-  const id = nick instanceof irc.Person ? nick.id : new irc.Person( nick, null, null ).id
-      , p = prefix || "IRCJS"
+const getKey = function( object, prefix ) {
+  const id = object.id || irc.id( object )
+      , p  = prefix || "IRCJS"
   return p + id
 }
+
+const redisStuff =
+  { EVENT:  EVENT
+  , STATUS: STATUS
+  , TOKEN:  TOKEN
+  , HOST:   HOST
+  , PORT:   PORT
+  , key:    getKey
+  }
+
+const onRedisError = function( err ) {
+  log.error( "Shared Redis client error: %s", err )
+}
+
+// Lazy Redis client getter
+var redisClient = null
+
+Object.defineProperty( redisStuff, "client", { get: function() {
+  if ( ! redisClient ) {
+    redisClient = redis.createClient( PORT, HOST )
+    redisClient.auth( TOKEN )
+    redisClient.on( redisStuff.EVENT.ERROR, onRedisError )
+  }
+  return redisClient
+} } )
 
 const times =
   [ 1000      // Second
@@ -31,7 +65,7 @@ const times =
   , 604800000 // Week
   ]           // Right square bracket
 
-const labels = [ "s", "m", "h", "d", "w" ]
+const labels = "smhdw"
 
 /** Input a JS timestamp, get a nice string like "1h 2s", which is the amount of time passed since then.
  *  @param {Date|number}  t     E.g. 1342489409837 from Date.now()
@@ -51,7 +85,33 @@ const timeAgo = function( t ) {
   return out.splice( 0, 2 ).join( ' ' )
 }
 
-exports.timeAgo = timeAgo
+// Reusable filters and stuff
+
+// Stuff for detecting bot-t.
+const botTPerson = irc.person( "bot-t" )
+    , botTPrefix = "?"
+
+// Command prefixes to look for.
+const prefixes = "!,./?@`"
+
+// Discard messages that bot-t responds to, if bot-t is present.
+const notForBotT = function( client, msg ) {
+  const chan    = client.channels.get( irc.id( msg.params[ 0 ] ) )
+      , forBotT = chan && chan.people.has( botTPerson.id )
+                       && msg.params[ 1 ].charAt( 1 ) === botTPrefix
+  return ! forBotT
+}
+
+// Keep messages meant for this client.
+// This works better than embedding the nick in a RegExp, since it may change.
+// Can also check for more ways this message may be meant for the bot.
+const forMe = function( client, msg ) {
+  const textParam  = msg.params[ 1 ]
+      , nickPrefix = textParam.indexOf( client.user.nick ) === 1
+      , cmdPrefix  = prefixes.indexOf( textParam.charAt( 1 ) ) !== -1
+      , queryMsg   = msg.params[ 0 ] === client.user.nick
+  return nickPrefix || cmdPrefix || queryMsg
+}
 
 // Text
 
@@ -321,15 +381,33 @@ const unescape = function( input ) {
   return input.replace( /&(#?)(\d{1,5}|\w{1,8});/gm, replaceEntity )
 }
 
-exports.unescape = unescape
+// A couple of plugins do the same JSON-fetching over HTTPS.
+const getJSON = function( url, callback ) {
+  https.get( url, function( response ) {
+    const data = []
+    response.on( irc.NODE.SOCKET.EVENT.DATA, function( dataPiece ) {
+      data.push( dataPiece )
+    } )
+    response.on( irc.NODE.SOCKET.EVENT.END, function() {
+      var obj
+      try {
+        obj = JSON.parse( data.join( "" ) )
+      } catch ( e ) {
+        log.error( "Broken JSON at %s", url )
+        return
+      }
+      callback( obj )
+    } )
+  } )
+}
 
 // Go go go
 
-exports.redis =
-  { EVENT:  EVENT
-  , STATUS: STATUS
-  , TOKEN:  TOKEN
-  , HOST:   HOST
-  , PORT:   PORT
-  , key:    getKey
+exports.filter    =
+  { forMe:      forMe
+  , notForBotT: notForBotT
   }
+exports.getJSON   = getJSON
+exports.redis     = redisStuff
+exports.timeAgo   = timeAgo
+exports.unescape  = unescape

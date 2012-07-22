@@ -15,16 +15,16 @@ const speak = function( reply, msg ) {
 
 const load = function( bot ) {
   FLAIR.forEach( function( f ) {
-    bot.lookFor( f[0], speak.bind( null, f[1] ) )
+    bot.match( f[0], speak.bind( null, f[1] ) )
   } )
   return irc.STATUS.SUCCESS
 }
 
-const eject = function() {
+const unload = function() {
   return irc.STATUS.SUCCESS
 }
 
-exports.name  = "Flair"
-exports.load  = load
-exports.eject = eject
+exports.name    = "Flair"
+exports.load    = load
+exports.unload  = unload
 

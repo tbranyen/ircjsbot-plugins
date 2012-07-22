@@ -1,12 +1,7 @@
-const redis = require( "redis" )
-    , fmt   = require( "util" ).format
-    , https = require( "https" )
-    , irc   = require( "irc-js" )
-    , share = require( "./shared" )
-
-const TOKEN = share.redis.TOKEN
-    , HOST  = share.redis.HOST
-    , PORT  = share.redis.PORT
+const fmt     = require( "util" ).format
+    , https   = require( "https" )
+    , irc     = require( "irc-js" )
+    , shared  = require( "./shared" )
 
 const log     = irc.logger.get( "ircjs-plugin-crew" )
     // All data is stored in a Redis hash, with normalized IRC nicks as keys.
@@ -26,14 +21,16 @@ const log     = irc.logger.get( "ircjs-plugin-crew" )
  *    }
  */
 
-const onRedisError = function( error ) {
-  log.error( "Crew Redis client error: %s", error )
-}
+const redisClient = shared.redis.client
 
-const redisClient = redis.createClient( PORT, HOST )
-// Should only be called once, regardless of dis/reconnecting etc, docs say.
-redisClient.auth( TOKEN )
-redisClient.on( share.redis.EVENT.ERROR, onRedisError )
+const prettyPrint = function( data ) {
+  const ret = []
+  for ( var k in data )
+    if ( data.hasOwnProperty( k ) )
+      ret.push( k, "→", data[ k ], "•" )
+  ret.pop()
+  return ret.join( ' ' )
+}
 
 // Looks for ?f(inger) <name>, replies with crew data.
 const onFinger = function( msg, nick ) {
@@ -43,9 +40,9 @@ const onFinger = function( msg, nick ) {
       log.error( "Error getting crüe data: %s", err )
       return irc.STATUS.ERROR
     }
-    // Dunno how to present it nicely, this will do for now.
     if ( res )
-      msg.reply( "%s, %s", msg.from.nick, res )
+      msg.reply( "%s, %s", msg.from.nick
+        , prettyPrint( JSON.parse( res ) ) )
     else
       msg.reply( "%s, no idea who %s is.", msg.from.nick, nick )
   } )
@@ -53,46 +50,28 @@ const onFinger = function( msg, nick ) {
 }
 
 const load = function( client ) {
-  /** Thought I'd reconnect here if needed, and disconnect in eject(),
-   *  but node_redis doesn't seem to do that (?). So just stay connected.
-   *  @todo Revisit this later and see if node_redis changed.
-   *    if ( ! redisClient.connected ) {
-   *    }
-   */
-  // GET ALL JSON EVEN IF NOT NEEDED, HOW SUBVERSIVE TAKE THAT THE MAN
-  https.get( crewURL, function( response ) {
-    const data = []
-    response.on( irc.NODE.SOCKET.EVENT.DATA, function( dataPiece ) {
-      data.push( dataPiece )
+  shared.getJSON( crewURL, function( data ) {
+    const headCount = data.length
+    log.debug( "Got crew data:", data )
+    // Now convert from array of objects to object keyed on nick/id
+    // because then we can shove it straight into redis with hmset.
+    const redisData = {}
+    data.forEach( function( crewMember ) {
+      redisData[ irc.id( crewMember.irc ) ] = JSON.stringify( crewMember )
     } )
-    response.on( irc.NODE.SOCKET.EVENT.END, function() {
-      // Better be valid JSON, otherwise: DOOM.
-      const crewArray = JSON.parse( data.join( '' ) )
-          , headCount = crewArray.length
-      log.debug( "Got crew data:", crewArray )
-      // Now convert from array of objects to object keyed on nick/id
-      // because then we can shove it straight into redis with hmset.
-      const redisData = {}
-      crewArray.forEach( function( crewMember ) {
-        redisData[ irc.id( crewMember.irc ) ] = JSON.stringify( crewMember )
-      } )
-      redisClient.hmset( crewKey, redisData )
-    } )
+    redisClient.hmset( crewKey, redisData )
   } )
-  // These disgusting stringexes are everywhere, there's no escape, help!
-  // Actually they are full of escapes.
-  client.lookFor( fmt( "^:(?:%s\\b[\\s,:]+|[@!\\/?\\.])f(?:inger)?\\s+([^\\s]+)"
-    , client.user.nick ), onFinger )
+  client.listen( irc.COMMAND.PRIVMSG )
+        .filter( shared.filter.forMe.bind( null, client ) )
+        .match( /\bf(?:inger)?\s+(\S+)/i )
+        .receive( onFinger )
   return irc.STATUS.SUCCESS
 }
 
-const eject = function() {
-  /** if ( redisClient.connected )
-   *    redisClient.quit()
-   */
+const unload = function() {
   return irc.STATUS.SUCCESS
 }
 
-exports.name  = "Crew"
-exports.load  = load
-exports.eject = eject
+exports.name    = "Crew"
+exports.load    = load
+exports.unload  = unload

@@ -35,14 +35,14 @@ const getFortune = function( msg ) {
 }
 
 const load = function( client ) {
-  client.lookFor( fmt( "^:%s\\b(.+)\\?\s*$", client.user.nick ), getFortune )
+  client.match( fmt( "^:%s\\b(.+)\\?\s*$", client.user.nick ), getFortune )
   return irc.STATUS.SUCCESS
 }
 
-const eject = function() {
+const unload = function() {
   return irc.STATUS.SUCCESS
 }
 
-exports.name  = "8ball"
-exports.load  = load
-exports.eject = eject
+exports.name    = "8ball"
+exports.load    = load
+exports.unload  = unload

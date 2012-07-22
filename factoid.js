@@ -2,40 +2,18 @@
  * @module factoid
  */
 
-const redis = require( "redis" )
-    , fmt   = require( "util" ).format
-    , irc   = require( "irc-js" )
-    , share = require( "./shared" )
-
-const TOKEN = share.redis.TOKEN
-    , HOST  = share.redis.HOST
-    , PORT  = share.redis.PORT
+const fmt     = require( "util" ).format
+    , irc     = require( "irc-js" )
+    , shared  = require( "./shared" )
 
 const log   = irc.logger.get( "ircjs-plugin-factoid" )
     , sKey  = "FACTOID"
 
-const handleError = function( err ) {
-  log.error( "Factoid Redis client error: %s", err )
-}
-
-const redisClient = redis.createClient( PORT, HOST )
-redisClient.auth( TOKEN )
-redisClient.on( share.redis.EVENT.ERROR, handleError )
-
-
-
 // Factoids.
 
-// An object for good old bot-t, handy for checking its presence
-const botT = irc.person( "bot-t" )
-    , botTPrefix = "?"
+const redisClient = shared.redis.client
 
-const speak = function( client, msg, prefix, trigger, person ) {
-  const isPM = msg.params[0] === client.user.nick
-  // Shut up if bot-t's prefix was used and bot-t is there
-  if ( !isPM && prefix === botTPrefix &&
-        irc.channel( msg.params[0] ).people.has( botT.id ) )
-    return
+const speak = function( client, msg, trigger, person ) {
   redisClient.hget( sKey, trigger, function( err, res ) {
     if ( err ) {
       log.error( "Error hget:ing factoid: %s", err )
@@ -44,6 +22,7 @@ const speak = function( client, msg, prefix, trigger, person ) {
     if ( ! res )
       return
     msg.reply( "%s, %s", person || msg.from.nick, res )
+    return irc.STATUS.STOP
   } )
 }
 
@@ -82,20 +61,23 @@ const forget = function( msg, key ) {
 // Implement Plugin interface.
 
 const load = function( client ) {
-  client.lookFor( /^:(?:[\/.,`?])([-_.:|\/\\\w]+) +is[:,]? +(.+)$/
-    , learn )
-  client.lookFor( /^:(?:[\/.,`?])forget +([-_.:|\/\\\w]+)$/
-    , forget )
-  client.lookFor( /^:([\/.,`?])?([-_.:|\/\\\w]+)(?: *@ *([-\[\]\{\}`|_\w]+))?\s*$/
-    , speak.bind( null, client ) )
-
+  const signal =
+    client.listen( irc.COMMAND.PRIVMSG )
+          .filter( shared.filter.forMe.bind( null, client ) )
+          .filter( shared.filter.notForBotT.bind( null, client ) )
+  signal.match( /([-_.:|\/\\\w]+) +is[:,]? +(.+)$/ )
+        .receive( learn )
+  signal.match( /forget\s+([-_.:|\/\\\w]+)$/ )
+        .receive( forget )
+  signal.match( /([-_.:|\/\\\w]+)(?:\s*@\s*([-\[\]\{\}`|_\w]+))?\s*$/ )
+        .receive( speak.bind( null, client ) )
   return irc.STATUS.SUCCESS
 }
 
-const eject = function() {
+const unload = function() {
   return irc.STATUS.SUCCESS
 }
 
-exports.name  = "Factoid"
-exports.load  = load
-exports.eject = eject
+exports.name    = "Factoid"
+exports.load    = load
+exports.unload  = unload

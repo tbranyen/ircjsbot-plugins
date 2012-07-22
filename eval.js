@@ -66,16 +66,16 @@ const racket = function( msg, code, person ) {
 // Implement Plugin interface.
 
 const load = function( bot ) {
-  bot.lookFor( /^:[\/.,`?]?(?:clj|clojure)(?:→|->)? *(.*)$/, clojure )
-  bot.lookFor( /^:[\/.,`?]?(?:rkt|racket)(?:→|->)? *(.*)$/, racket )
+  bot.match( /^:[\/.,`?]?(?:clj|clojure)(?:→|->)? *(.*)$/, clojure )
+  bot.match( /^:[\/.,`?]?(?:rkt|racket)(?:→|->)? *(.*)$/, racket )
   return irc.STATUS.SUCCESS
 }
 
-const eject = function() {
+const unload = function() {
   return irc.STATUS.SUCCESS
 }
 
-exports.name  = "Eval"
-exports.load  = load
-exports.eject = eject
+exports.name    = "Eval"
+exports.load    = load
+exports.unload  = unload
 

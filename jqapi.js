@@ -50,16 +50,14 @@ const onJQAPI = function( msg ) {
 }
 
 const load = function( bot ) {
-  bot.lookFor( /\?([^#@]+)(?:\s*#([1-9]))?(?:\s*@\s*([-\[\]|_\w]+))?$/, onJQAPI )
+  bot.match( /\?([^#@]+)(?:\s*#([1-9]))?(?:\s*@\s*([-\[\]|_\w]+))?$/, onJQAPI )
   return irc.STATUS.SUCCESS
 }
 
-const eject = function() {
+const unload = function() {
   return irc.STATUS.SUCCESS
 }
 
-module.exports =
-  { name:   "JQAPI"
-  , load:   load
-  , eject:  eject
-  }
+exports.name    = "jQuery API"
+exports.load    = load
+exports.unload  = unload

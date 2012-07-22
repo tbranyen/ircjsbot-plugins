@@ -1,56 +1,59 @@
 const fmt     = require( "util" ).format
     , https   = require( "https" )
     , irc     = require( "irc-js" )
-    , share   = require( "./shared" )
+    , shared  = require( "./shared" )
     , jQJSON  = require( "./jqapi.json" )
     , log     = irc.logger.get( "ircjs-plugin-jqapi" )
 
-const onJQAPI = function( msg ) {
-
-  log.debug( "onJQAPI triggered" )
-  
-  const splat = msg.params[ 1 ].split( ' ' )
-      , s = splat[ 0 ].replace( ':?', '' )
-      , to = ( splat[ 1 ] === '@' && splat[ 2 ] && splat.length === 3 ) ? splat[ 2 ] : ''
-      , a = jQJSON
-      
-  var res = ''
-  
-  if ( splat.length ) {
-      Object.keys( a ).map( function( k ) {
-        
-        var name = a[ k ].name
-          , title = a[ k ].title
-          , desc = a[ k ].desc
-          , url = a[ k ].url
-        
-        // search for selector
-        if ( s.indexOf( ':' ) >= 0 ) {
-          if ( title.indexOf( 'Selector' ) >= 0 && name == s.replace( ':', '' ) ) {
-            res = title + ': ' + desc + ' ' + url
-            return
-          }
-          
-        // everything else
-        } else if ( name.toLowerCase() == s.toLowerCase() && title.indexOf( ':' ) == -1 ) {
-          res = title + ': ' + desc + ' ' + url
-          return
-        }
-      })
+const onAPI = function( msg, query, index, nick ) {
+  log.debug( "in onAPI" )
+  const results = []
+      , num     = index ? index : 1
+      , replyTo = nick || msg.from.nick
+  var hits = 0
+    , name
+    , title
+    , desc
+    , url
+    , key
+  log.debug( "interate" )
+  for ( key in jQJSON ) {
+    name  = jQJSON[ key ].name
+    title = jQJSON[ key ].title
+    desc  = jQJSON[ key ].desc
+    url   = jQJSON[ key ].url
+    // search for selector
+    if ( -1 !== query.indexOf( ":" )
+        && title.indexOf( "Selector" ) >= 0
+        && name === query.replace( ":", "" ) ) {
+      results.push( fmt( "%s: %s %s", title, desc, url ) )
+      ++hits
     }
-    
-    // say what you need to say
-    if ( res != '' ) {
-      if ( to ) {
-        msg.reply( to + ': ' + res )
-      } else {
-        msg.reply( msg.from.nick + ': ' + res )
-      }
+    // everything else
+    else if ( name.toLowerCase() === query.toLowerCase()
+        && title.indexOf( ":" ) === -1 ) {
+      results.push( fmt( "%s: %s %s", title, desc, url ) )
+      ++hits
     }
+    if ( hits === num )
+      break
+  }
+  log.debug( "checkcizncn", hits )
+  if ( hits )
+    if ( index && hits < index )
+      msg.reply( "%s, I only found %d match%s.", replyTo, hits, hits === 1 ? "" : "es" )
+    else
+      msg.reply( "%s, %s", replyTo, results.pop() )
+  else
+    msg.reply( "%s, no matches.", replyTo )
+  return irc.STATUS.STOP
 }
 
-const load = function( bot ) {
-  bot.match( /\?([^#@]+)(?:\s*#([1-9]))?(?:\s*@\s*([-\[\]|_\w]+))?$/, onJQAPI )
+const load = function( client ) {
+  client.listen( irc.COMMAND.PRIVMSG )
+        .filter( shared.filter.forMe.bind( null, client ) )
+        .match( /\bapi\s+(\S+)(?:\s*#([1-9]))?(?:\s*@\s*(\S+)[\s\W]*)?$/ )
+        .receive( onAPI )
   return irc.STATUS.SUCCESS
 }
 

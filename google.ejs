@@ -1,0 +1,54 @@
+/**
+ * @module google
+ */
+
+"use strict";
+
+const fmt     = require("util").format;
+const https   = require("https");
+const irc     = require("irc-js");
+const shared  = require("./shared");
+
+const unescape = shared.unescape;
+
+async function search(query) {
+  const url = {
+    host: "ajax.googleapis.com",
+    path: fmt("/ajax/services/search/web?v=1.0&q=%s", encodeURIComponent(query))
+  };
+  await res = https.get(url);
+  const data = [];
+  res.on(irc.NODE.SOCKET.EVENT.DATA, data.push.bind(data));
+  await _ = res.on(irc.NODE.SOCKET.EVENT.END);
+  return JSON.parse(data.join("")).responseData.results;
+}
+
+function speak(msg, query, index, person) {
+  const idx = index ? index : 0;
+  await res = search(query);
+  if (!res.length) {
+    msg.reply("%s, sorry, no results for ‟%s”.", msg.from.nick, query);
+    return;
+  }
+  msg.reply("%s, %s → %s", person ? person : msg.from.nick,
+    unescape(res[idx].titleNoFormatting),
+    res[idx].unescapedUrl);
+  resume;
+  return irc.STATUS.STOP;
+}
+
+// Implement Plugin interface.
+
+function load(bot) {
+  bot.matchIf(/\bg(?:oogle)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
+    shared.forMe, speak);
+  return irc.STATUS.SUCCESS;
+}
+
+function unload() {
+  return irc.STATUS.SUCCESS;
+}
+
+exports.name    = "Google";
+exports.load    = load;
+exports.unload  = unload;

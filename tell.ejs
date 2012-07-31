@@ -35,7 +35,7 @@ Note.fromString = function(s) {
   return note;
 }
 
-function notify(msg) {
+function notify(msg, _) {
   // Probably full of async-y bugs, how to update a bunch of items at once and get a callback?
   const nick = msg.from.nick;
   const key  = rds.key(msg.from, KEY);
@@ -56,7 +56,8 @@ function notify(msg) {
     ++new_;
     note.new = false;
     log.debug("Marking note from %s (%s) as not new", note.from, note);
-    redisClient.lset(key, i, note.toString());
+    redisClient.lset(key, i, note.toString(),
+      function(err, res) { if (err) { log.error(err); }});
   }
   if (0 === new_) {
     return;
@@ -86,7 +87,7 @@ function read(bot, msg) {
     msg.reply("%sfrom %s, %s ago: %s", pm ? "" : nick + ", ",
       note.from, shared.timeAgo(note.date), note.note);
   }
-  redisClient.del(key);
+  redisClient.del(key, function(err, res) { if (err) { log.error(err); }});
   resume;
   return irc.STATUS.STOP;
 }
@@ -110,9 +111,9 @@ function add(bot, msg, name, note) {
 }
 
 function load(bot) {
+  bot.match(/^(?:(?!\bread\b).)*$/, notify);
   bot.matchIf(/\btell\s+(\S+)\W?\s+(.+)\s*$/i, shared.forMe, add.bind(null, bot));
   bot.matchIf(/\bread\b/i, shared.forMe, read.bind(null, bot));
-  bot.match(irc.COMMAND.PRIVMSG, notify);
   return irc.STATUS.SUCCESS;
 }
 

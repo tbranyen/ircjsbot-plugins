@@ -85,7 +85,7 @@ function describe(bot, oldMsg, thisMsg) {
     break;
 
     default:
-    reply.push(", doing something I have no description for. The message was: " + parts[2]);
+    reply.push(", doing something I have no description for. The message was: " + oldMsg.toString());
     break;
   }
   return reply.join("");

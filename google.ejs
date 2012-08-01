@@ -14,7 +14,7 @@ const unescape = shared.unescape;
 async function search(query) {
   const url = {
     host: "ajax.googleapis.com",
-    path: fmt("/ajax/services/search/web?v=1.0&q=%s", encodeURIComponent(query))
+    path: "/ajax/services/search/web?v=1.0&q=" + encodeURIComponent(query)
   };
   await res = https.get(url);
   const data = [];
@@ -26,13 +26,12 @@ async function search(query) {
 function speak(msg, query, index, person) {
   const idx = index ? index : 0;
   await res = search(query);
-  if (!res.length) {
-    msg.reply("%s, sorry, no results for ‟%s”.", msg.from.nick, query);
+  let hit   = res[idx];
+  if (!hit) {
+    msg.reply("${msg.from.nick}, sorry, no results for ‟${query}”.");
     return;
   }
-  msg.reply("%s, %s → %s", person ? person : msg.from.nick,
-    unescape(res[idx].titleNoFormatting),
-    res[idx].unescapedUrl);
+  msg.reply("${person || msg.from.nick}, ${unescape(hit.titleNoFormatting)} → ${hit.unescapedUrl}");
   resume;
   return irc.STATUS.STOP;
 }

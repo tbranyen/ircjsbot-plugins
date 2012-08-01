@@ -14,16 +14,15 @@ function load(bot) {
   await msg, chan = bot.matchIf(/\bjoin\s+(\S+)\s*$/i, forMe);
   const from = msg.from.nick;
   if (bot.channels.has(irc.id(chan))) {
-    return msg.reply("%s, I am already in %s!", from, chan);
+    return msg.reply("${from}, I am already in ${chan}.");
   }
   // Reply when joined.
   await chan, err = bot.join(chan);
   if (!err) {
-    msg.reply("%s, I am now in %s.", from, chan);
+    msg.reply("${from}, I am now in ${chan}.");
     return;
   }
-  msg.reply("%s, there was an error when I tried to join %s: %s",
-    from, name, err.message);
+  msg.reply("${from}, there was an error when I tried to join ${name}: ${err.message}");
   resume;
 
   resume STOP;
@@ -31,11 +30,11 @@ function load(bot) {
   // Leave a channel.
   await msg, chan = bot.matchIf(/\b(?:part|leave)\s+(\S+)\s*$/i, forMe);
   if (!bot.channels.has(irc.id(chan))) {
-    msg.reply("%s, I am not in %s.", msg.from.nick, chan);
+    msg.reply("${msg.from.nick}, I am not in ${chan}.");
     return STOP;
   }
   bot.part(chan);
-  msg.reply("%s, I have now left %s.", msg.from.nick, chan);
+  msg.reply("${msg.from.nick}, I have now left ${chan}.");
   resume STOP;
 
   // Say something.
@@ -45,13 +44,13 @@ function load(bot) {
     chanObj.say(text);
   }
   else {
-    msg.reply("%s, I am not in %s.", msg.from.nick, chan);
+    msg.reply("${msg.from.nick}, I am not in ${chan}.");
   }
   resume STOP;
 
   // Quit.
   await msg, reason = bot.matchIf(/\bquit((?:\s+).+)?\s*$/i, forMe);
-  bot.quit(reason ? reason : msg.from.nick + " told me to quit");
+  bot.quit(reason ? reason : msg.from.nick + " told me to quit, bye!");
   process.exit();
   resume STOP;
 
@@ -62,14 +61,14 @@ function load(bot) {
   if (err) {
     return;
   }
-  chan.say("Thanks for inviting me, %s", msg.from.nick);
+  chan.say("Thanks for inviting me, ${msg.from.nick}.");
   resume;
 
   resume STOP;
 
   // Take no crap/compliments.
   await msg, you, remark = bot.matchIf(/\b(you['’]?re|you\s+are|ur|u)\s+([^?]+)/i, forMe);
-  msg.reply("%s, no %s %s", msg.from.nick, you.toUpperCase(), remark);
+  msg.reply("${msg.from.nick}, no ${you.toUpperCase()} ${remark}");
   resume STOP;
 
   return SUCCESS;

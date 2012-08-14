@@ -65,10 +65,18 @@ const times = [
   60000,      // Minute
   3600000,    // Hour
   86400000,   // Day
-  604800000   // Week
+  604800000,  // Week
+  2629743830  // Month...ish
 ];            // Right square bracket
 
-const labels = "smhdw";
+const labels = [
+  "s",
+  "m",
+  "h",
+  "d",
+  "w",
+  "mon"
+];
 
 /** Input a JS timestamp, get a nice string like "1h 2s".
  *  @param {Date|number}  t
@@ -78,6 +86,12 @@ function timeAgo(t) {
   let rem = Date.now() - t;
   let idx = times.length;
   let num = 0;
+  if (rem < 0) {
+    return "in the future!!";
+  }
+  else if (rem < times[0]) {
+    return "now";
+  }
   while (idx--) {
     num = ~~(rem/times[idx]);
     if (!num) {
@@ -86,7 +100,9 @@ function timeAgo(t) {
     rem -= num * times[idx];
     out.push(num + labels[idx]);
   }
-  return out.splice(0, 2).join(" ");
+  out.splice(2);
+  out.push("ago");
+  return out.join(" ");
 }
 
 // Stuff for detecting bot-t.
@@ -134,6 +150,21 @@ async function getJSON(url) {
     log.error("Broken JSON at %s", url);
   }
 }
+
+// Always nice to have.
+function compose(/*fn1, fn2 ... fnN*/) {
+  const fns = Array.apply(null, arguments);
+  let l = fns.length - 1;
+  return function(/* args... */) {
+    let ret = fns[l].apply(null, arguments);
+    let i = l;
+    while (i) {
+      ret = fns[--i](ret);
+    }
+    return ret;
+  }
+}
+
 
 // Text
 const ENTITIES = new Map();
@@ -390,6 +421,7 @@ ENTITIES.set("&lsaquo;", "‹");
 ENTITIES.set("&rsaquo;", "›");
 ENTITIES.set("&euro;", "€");
 
+exports.compose     = compose;
 exports.forMe       = forMe;
 exports.getJSON     = getJSON;
 exports.redis       = redisStuff;

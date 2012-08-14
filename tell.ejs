@@ -74,17 +74,17 @@ function read(bot, msg) {
   await err, notes = redisClient.lrange(key, 0, -1);
   if (err) {
     log.error("Redis error in tell.js: %s", err);
-    return;
+    return irc.STATUS.STOP;
   }
   if (!notes || 0 === notes.length) {
     msg.reply("%sNo unread messages.", pm ? "" : nick + ", ");
-    return;
+    return irc.STATUS.STOP;
   }
   let l = notes.length;
   let note = null;
   while (l--) {
     note = Note.fromString(notes[l]);
-    msg.reply("%sfrom %s, %s ago: %s", pm ? "" : nick + ", ",
+    msg.reply("%sfrom %s, %s: %s", pm ? "" : nick + ", ",
       note.from, shared.timeAgo(note.date), note.note);
   }
   redisClient.del(key, function(err, res) { if (err) { log.error(err); }});
@@ -95,13 +95,13 @@ function read(bot, msg) {
 function add(bot, msg, name, note) {
   const from  = msg.from.nick;
   const key   = rds.key(name, KEY);
-  if (key === rds.key(from, KEY)) {
+  if (irc.id(name) == msg.from.id) {
     msg.reply("%s, %s", from, note);
-    return;
+    return irc.STATUS.STOP;
   }
-  if (key === rds.key(bot.user.nick, KEY)) {
-    msg.reply("%s, whatever you say…", from);
-    return;
+  if (irc.id(name) == bot.user.id) {
+    msg.reply("\x01ACTION explodes\x01");
+    return irc.STATUS.STOP;
   }
   const rnote = new Note(from, key, note);
   redisClient.lpush(key, rnote.toString());
@@ -112,8 +112,8 @@ function add(bot, msg, name, note) {
 
 function load(bot) {
   bot.match(/^(?:(?!\bread\b).)*$/, notify);
-  bot.matchIf(/\btell\s+(\S+)\W?\s+(.+)\s*$/i, shared.forMe, add.bind(null, bot));
-  bot.matchIf(/\bread\b/i, shared.forMe, read.bind(null, bot));
+  bot.matchIf(/^:(?:\S+)?\W?\btell\s+(\S+)\W?\s+(.+)\s*$/i, shared.forMe, add.bind(null, bot));
+  bot.matchIf(/^:(?:\S+)?\W?\bread[\W\s]*$/i, shared.forMe, read.bind(null, bot));
   return irc.STATUS.SUCCESS;
 }
 

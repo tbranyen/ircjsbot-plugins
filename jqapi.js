@@ -15,16 +15,11 @@ function onAPI(msg, query, index, nick) {
   const num     = index ? index : 1;
   const replyTo = nick || msg.from.nick;
   let hits = 0;
-  let name;
-  let title;
-  let desc;
-  let url;
-  let key;
-  for (key in jQJSON) {
-    name  = jQJSON[key].name;
-    title = jQJSON[key].title;
-    desc  = jQJSON[key].desc;
-    url   = jQJSON[key].url;
+  for (let key in jQJSON) {
+    let name  = jQJSON[key].name;
+    let title = jQJSON[key].title;
+    let desc  = jQJSON[key].desc;
+    let url   = jQJSON[key].url;
     // search for selector
     if (-1 !== query.indexOf(":") &&
         title.indexOf("Selector") >= 0 &&

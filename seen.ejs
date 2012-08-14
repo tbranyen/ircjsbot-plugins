@@ -40,13 +40,13 @@ function seen(bot, msg, name, num) {
   }
   const parts = res.match(/^(\d+)(.+)/);
   const date  = new Date(Number(parts[1]));
-  const msg_  = irc.parser.parse(parts[2] + "\r\n");
+  const msg_  = irc.parser.parse(new Buffer(parts[2] + "\r\n"));
   const ago   = shared.timeAgo(date);
   if (!msg_) {
     msg.reply("%s, WTF, could not parse this: %s", msg.from.nick, parts[2]);
     return;
   }
-  msg.reply("%s, I saw %s %s ago%s", msg.from.nick, name, ago, describe(bot, msg_, msg));
+  msg.reply("${msg.from.nick}, I saw ${name} ${ago}, " + describe(bot, msg_, msg));
   resume;
 
   return irc.STATUS.STOP;
@@ -57,35 +57,34 @@ function describe(bot, oldMsg, thisMsg) {
   switch (oldMsg.type) {
     case irc.COMMAND.PRIVMSG:
     if (oldMsg.params[0] === bot.user.nick) {
-      reply.push(", saying something to me in private.");
+      reply.push("saying something to me in private.");
     }
     else {
-      reply.push(fmt(", %s %s, saying: %s",
+      reply.push(fmt("%s %s, saying: %s",
         thisMsg.params[0] === oldMsg.params[0] ? "here in" : "in",
         oldMsg.params[0], oldMsg.params[1].slice(1)));
     }
     break;
 
     case irc.COMMAND.JOIN:
-    reply.push(fmt(", joining %s.", oldMsg.params[0]));
+    reply.push(fmt("joining %s.", oldMsg.params[0]));
     break;
 
     case irc.COMMAND.PART:
-    reply.push(fmt(", leaving %s%s", oldMsg.params[0],
+    reply.push(fmt("leaving %s%s", oldMsg.params[0],
       oldMsg.params[1] ? " with the message: %s" + oldMsg.params[1].slice(1) : "."));
     break;
 
     case irc.COMMAND.QUIT:
-    reply.push(fmt(", quitting with the message: %s", oldMsg.params[0].slice(1)));
+    reply.push(fmt("quitting with the message: %s", oldMsg.params[0].slice(1)));
     break;
 
     case irc.COMMAND.NICK:
-    name = oldMsg.params[0]
-    reply.push(fmt(", changing nick to %s.", name));
+    reply.push(fmt("changing nick to %s.", oldMsg.params[0].replace(/^:/, "")));
     break;
 
     default:
-    reply.push(", doing something I have no description for. The message was: " + oldMsg.toString());
+    reply.push("doing something I have no description for. The message was: " + oldMsg.toString());
     break;
   }
   return reply.join("");

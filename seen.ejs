@@ -83,6 +83,11 @@ function describe(bot, oldMsg, thisMsg) {
     reply.push(fmt("changing nick to %s.", oldMsg.params[0].replace(/^:/, "")));
     break;
 
+    case irc.COMMAND.TOPIC:
+    reply.push(fmt("changing the topic of %s to: %s", oldMsg.params[0],
+      oldMsg.params[1].replace(/^:/, "")));
+    break;
+
     default:
     reply.push("doing something I have no description for. The message was: " + oldMsg.toString());
     break;
@@ -100,8 +105,8 @@ function remember(msg) {
 }
 
 function load(bot) {
-  bot.listen(irc.EVENT.ANY, remember);
-  await msg, nick, i = bot.matchIf(/^:(?:\S+)?\W?\bseen\s+(\S+)\W?(?:\s+(\d+))?\s*$/i, shared.forMe);
+  bot.match(irc.EVENT.ANY, remember);
+  await msg, nick, i = bot.match(/^:(?:\S+)?\W?\bseen\s+(\S+)\W?(?:\s+(\d+))?\s*$/i, shared.forMe);
   resume seen(bot, msg, nick, i);
 
   return irc.STATUS.SUCCESS;

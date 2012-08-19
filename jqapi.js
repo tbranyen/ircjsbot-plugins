@@ -52,7 +52,7 @@ function onAPI(msg, query, index, nick) {
 }
 
 function load(client) {
-  client.matchIf(/\bapi\s+(\S+)(?:\s*([1-9]+))?(?:\s*@\s*(\S+)[\s\W]*)?$/,
+  client.match(/\bapi\s+(\S+)(?:\s*([1-9]+))?(?:\s*@\s*(\S+)[\s\W]*)?$/,
     shared.forMe, onAPI);
   return irc.STATUS.SUCCESS;
 }

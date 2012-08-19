@@ -38,7 +38,7 @@ function isForMe(msg) {
 }
 
 function load(client) {
-  client.matchIf(/\?\s*$/, isForMe, getFortune);
+  client.match(/\?\s*$/, isForMe, getFortune);
   return irc.STATUS.SUCCESS;
 }
 

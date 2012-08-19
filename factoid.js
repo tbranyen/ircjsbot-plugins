@@ -63,9 +63,9 @@ function forget(msg, key) {
 // Implement Plugin interface.
 
 function load(bot) {
-  bot.matchIf(/^:(?:\W|\S+\W?)?(\w\S+) +is[:,]? +(.+)/, shared.forMe, learn);
-  bot.matchIf(/\bforget\s+([-_.:|\/\\\w]+)$/, shared.forMe, forget);
-  bot.matchIf(/([-_.:|\/\\\w]+)(?:\s*@\s*([-\[\]\{\}`|_\w]+))?\s*$/,
+  bot.match(/^:(?:\W|\S+\W?)?(\w\S+) +is[:,]? +(.+)/, shared.forMe, learn);
+  bot.match(/\bforget\s+([-_.:|\/\\\w]+)$/, shared.forMe, forget);
+  bot.match(/([-_.:|\/\\\w]+)(?:\s*@\s*([-\[\]\{\}`|_\w]+))?\s*$/,
     shared.forMe, speak);
   return irc.STATUS.SUCCESS;
 }

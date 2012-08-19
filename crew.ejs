@@ -56,7 +56,7 @@ function load(bot) {
   redisClient.hmset(crewKey, redisData);
   resume;
 
-  bot.matchIf(/^:(?:\S+)?\W?\bf(?:inger)?\s+(\S+)/i, shared.forMe, onFinger);
+  bot.match(/^:(?:\S+)?\W?\bf(?:inger)?\s+(\S+)/i, shared.forMe, onFinger);
   return irc.STATUS.SUCCESS;
 }
 

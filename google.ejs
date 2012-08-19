@@ -4,7 +4,6 @@
 
 "use strict";
 
-const fmt     = require("util").format;
 const https   = require("https");
 const irc     = require("irc-js");
 const shared  = require("./shared");
@@ -25,21 +24,22 @@ async function search(query) {
 
 function speak(msg, query, index, person) {
   const idx = index ? index : 0;
-  await res = search(query);
-  let hit   = res[idx];
-  if (!hit) {
-    msg.reply("${msg.from.nick}, sorry, no results for ‟${query}”.");
-    return;
+  {
+    await res = search(query);
+    let hit   = res[idx];
+    if (!hit) {
+      msg.reply("${msg.from.nick}, sorry, no results for ‟${query}”.");
+      return;
+    }
+    msg.reply("${person || msg.from.nick}, ${unescape(hit.titleNoFormatting)} → ${hit.unescapedUrl}");
   }
-  msg.reply("${person || msg.from.nick}, ${unescape(hit.titleNoFormatting)} → ${hit.unescapedUrl}");
-  resume;
   return irc.STATUS.STOP;
 }
 
 // Implement Plugin interface.
 
 function load(bot) {
-  bot.matchIf(/\bg(?:oogle)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
+  bot.match(/\bg(?:oogle)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
     shared.forMe, speak);
   return irc.STATUS.SUCCESS;
 }

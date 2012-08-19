@@ -99,7 +99,7 @@ function search(msg, type, query, index) {
       return;
     }
     if (results < index) {
-      msg.reply("${msg.from.nick}, I only found ${results} ${type}s, you asked for #${index}.");
+      msg.reply("${msg.from.nick}, I only found ${results} ${type}${results === 1 ? '' : 's'}, you asked for #${index}.");
       return;
     }
 
@@ -150,9 +150,9 @@ function socialhapyNotInChan(msg) {
 
 function load(bot) {
   // No need to check for socialhapy here, it uses "spotifind".
-  bot.matchIf(/\bspotify(?:\s+(album|artist|track))?\s+((?:\D+)|(?:.+))(?:\s+([1-9]\d*))?$/i,
+  bot.match(/\bspotify(?:\s+(album|artist|track))?\s+((?:\D+)|(?:.+))(?:\s+([1-9]\d*))?$/i,
     shared.forMe, search);
-  bot.matchIf(/\b(?:open.spotify.com|spotify)[/:](album|artist|track)[/:](\S+)/i,
+  bot.match(/\b(?:open.spotify.com|spotify)[/:](album|artist|track)[/:](\S+)/i,
     socialhapyNotInChan, lookup);
   return SUCCESS;
 }

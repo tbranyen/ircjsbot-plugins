@@ -11,7 +11,7 @@ const forMe   = shared.forMe;
 
 function load(bot) {
   // Join a channel.
-  await msg, chan = bot.matchIf(/\bjoin\s+(\S+)\s*$/i, forMe);
+  await msg, chan = bot.match(/\bjoin\s+(\S+)\s*$/i, forMe);
   const from = msg.from.nick;
   if (bot.channels.has(irc.id(chan))) {
     return msg.reply("${from}, I am already in ${chan}.");
@@ -28,7 +28,7 @@ function load(bot) {
   resume STOP;
 
   // Leave a channel.
-  await msg, chan = bot.matchIf(/\b(?:part|leave)\s+(\S+)\s*$/i, forMe);
+  await msg, chan = bot.match(/\b(?:part|leave)\s+(\S+)\s*$/i, forMe);
   if (!bot.channels.has(irc.id(chan))) {
     msg.reply("${msg.from.nick}, I am not in ${chan}.");
     return STOP;
@@ -38,7 +38,7 @@ function load(bot) {
   resume STOP;
 
   // Say something.
-  await msg, chan, text = bot.matchIf(/\bsay\s+(\S+)\s+(.+)*$/i, forMe);
+  await msg, chan, text = bot.match(/\bsay\s+(\S+)\s+(.+)*$/i, forMe);
   const chanObj = bot.channels.get(irc.id(chan));
   if (chanObj) {
     chanObj.say(text);
@@ -49,13 +49,13 @@ function load(bot) {
   resume STOP;
 
   // Quit.
-  await msg, reason = bot.matchIf(/\bquit((?:\s+).+)?\s*$/i, forMe);
+  await msg, reason = bot.match(/\bquit((?:\s+).+)?\s*$/i, forMe);
   bot.quit(reason ? reason : msg.from.nick + " told me to quit, bye!");
   process.exit();
   resume STOP;
 
   // Get invited.
-  await msg = bot.listen(irc.COMMAND.INVITE);
+  await msg = bot.match(irc.COMMAND.INVITE);
   // Some clients send chan name as a trailing param :/
   await chan, err = bot.join(msg.params[1].replace(/^:/, ""));
   if (err) {
@@ -67,7 +67,7 @@ function load(bot) {
   resume STOP;
 
   // Take no crap/compliments.
-  await msg, you, remark = bot.matchIf(/\b(you['’]?re|you\s+are|ur|u)\s+([^?]+)/i, forMe);
+  await msg, you, remark = bot.match(/\b(you['’]?re|you\s+are|ur|u)\s+([^?]+)/i, forMe);
   msg.reply("${msg.from.nick}, no ${you.toUpperCase()} ${remark}");
   resume STOP;
 

@@ -36,13 +36,13 @@ function printPopularity(n) {
 
 function printArtists(arr) {
   const len = arr.length;
-  if (len == 1) { return "\x02${arr[0].name}\x02"; }
+  if (len == 1) { return "\x02" + arr[0].name + "\x02"; }
   const out = new Array(arr.length);
   for (let i = 0, l = len; i < l; ++i) {
     if (i > 0) {
       out.push(i == l - 1 ? " and " : ", ");
     }
-    out.push("\x02${arr[i].name}\x02");
+    out.push("\x02" + arr[i].name + "\x02");
   }
   return out.join("");
 }
@@ -51,7 +51,7 @@ function printItem(item) {
   const out = [];
   const artists = item.artist ? [{"name": item.artist}] : item.artists;
   out.push("\x02\x033\u2669\x03\x02");
-  out.push("\x02${item.name}\x02");
+  out.push("\x02" + item.name + "\x02");
   if (artists) {
     out.push("\x0314by\x03", printArtists(artists));
   }
@@ -59,7 +59,7 @@ function printItem(item) {
     out.push(printPopularity(item.popularity));
   }
   if (item.href) {
-    out.push("\x0314${item.href}\x03");
+    out.push("\x0314" + item.href + "\x03");
   }
   return out.join(" ");
 }
@@ -70,13 +70,12 @@ function printItem(item) {
  *  @param  {string}  id
  */
 function lookup(msg, type, id) {
-  let path = "/lookup/1/.json?uri=spotify:${type}:${id}";
-  {
-    await res = getSpotifyJSON(path);
+  let path = "/lookup/1/.json?uri=spotify:" + type + ":" + id;
+  getSpotifyJSON(path, function(res) {
     if (!res) { return; }
     delete res[type].href;
     return msg.reply(printItem(res[type]));
-  }
+  });
   return STOP;
 }
 
@@ -89,22 +88,21 @@ function lookup(msg, type, id) {
 function search(msg, type, query, index) {
   type  = type ? type : TYPE.TRACK;
   index = index ? index : 1;
-  const path  = "/search/1/${type}.json?q=${query}";
-  {
-    await res = getSpotifyJSON(path);
+  const path  = "/search/1/" + type + ".json?q=" + query;
+  getSpotifyJSON(path, function(res) {
     const results = res ? Math.min(res["info"]["num_results"] -
       res["info"]["offset"], res["info"]["limit"]) : 0;
     if (!results) {
-      msg.reply("${msg.from.nick}, didn’t find any ${type} matching “${query}”.")
+      msg.reply(msg.from.nick + ", didn’t find any " + type + " matching “" + query + "”.");
       return;
     }
     if (results < index) {
-      msg.reply("${msg.from.nick}, I only found ${results} ${type}${results === 1 ? '' : 's'}, you asked for #${index}.");
+      msg.reply(msg.from.nick + ", I only found " + results + " " + type + (results === 1 ? "" : "s") + ", you asked for #" + index);
       return;
     }
-
     msg.reply(printItem(res[type + "s"][index - 1]));
-  }
+  });
+
   return STOP;
 }
 
@@ -118,23 +116,25 @@ const httpOpts = {
 /** Get JSON from Spotify web service.
  *  @param  {string}  path
  */
-async getSpotifyJSON(path) {
+function getSpotifyJSON(path, cb) {
   httpOpts.path = encodeURI(path);
   const req = http.get(httpOpts, function(res) {
     const data = [];
     res.setEncoding("utf8");
     res.on("data", data.push.bind(data));
-    await end = res.on("end");
-    let res = null;
-    try {
-      res = JSON.parse(data.join(""));
-    } catch (err) {
-      log.error("Spotify fail: ${err.message}");
-    }
-    return res;
+    res.on("end", function() {
+      let res = null;
+      try {
+        res = JSON.parse(data.join(""));
+      } catch (err) {
+        log.error("Spotify fail: " + err.message);
+      }
+      cb(res);
+    });
   });
-  await err = req.on("error");
-  return null;
+  req.on("error", function(err) {
+    cb(null);
+  });
 }
 
 // socialhapy is another bot with Spotify powers, be nice to it.

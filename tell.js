@@ -39,56 +39,57 @@ function notify(msg, _) {
   // Probably full of async-y bugs, how to update a bunch of items at once and get a callback?
   const nick = msg.from.nick;
   const key  = rds.key(msg.from, KEY);
-  await err, notes = redisClient.lrange(key, 0, -1);
-  if (err) {
-    log.error("Redis error in tell.js Tell.prototype.notify: %s", err);
-    return;
-  }
-  if (!notes || 0 === notes.length) {
-    return;
-  }
-  let new_  = 0;
-  for (let i = 0, l = notes.length; i < l; ++i) {
-    let note = Note.fromString(notes[i]);
-    if (!note.new) {
-      continue;
+  redisClient.lrange(key, 0, -1, function(err, notes) {
+    if (err) {
+      log.error("Redis error in tell.js Tell.prototype.notify: %s", err);
+      return;
     }
-    ++new_;
-    note.new = false;
-    log.debug("Marking note from %s (%s) as not new", note.from, note);
-    redisClient.lset(key, i, note.toString(),
-      function(err, res) { if (err) { log.error(err); }});
-  }
-  if (0 === new_) {
-    return;
-  }
-  const one = new_ === 1;
-  msg.reply("%s, you have %s, say “read” to me when you wish to read %s.",
-    nick, one ? "one new message" : new_ + " new messages", one ? "it" : "them");
+    if (!notes || 0 === notes.length) {
+      return;
+    }
+    let new_  = 0;
+    for (let i = 0, l = notes.length; i < l; ++i) {
+      let note = Note.fromString(notes[i]);
+      if (!note.new) {
+        continue;
+      }
+      ++new_;
+      note.new = false;
+      log.debug("Marking note from %s (%s) as not new", note.from, note);
+      redisClient.lset(key, i, note.toString(),
+        function(err, res) { if (err) { log.error(err); }});
+    }
+    if (0 === new_) {
+      return;
+    }
+    const one = new_ === 1;
+    msg.reply("%s, you have %s, say “read” to me when you wish to read %s.",
+      nick, one ? "one new message" : new_ + " new messages", one ? "it" : "them");
+  });
 }
 
 function read(bot, msg) {
   const nick = msg.from.nick;
   const key  = rds.key(msg.from, KEY);
   const pm   = msg.params[0] === bot.user.nick;
-  await err, notes = redisClient.lrange(key, 0, -1);
-  if (err) {
-    log.error("Redis error in tell.js: %s", err);
-    return irc.STATUS.STOP;
-  }
-  if (!notes || 0 === notes.length) {
-    msg.reply("%sNo unread messages.", pm ? "" : nick + ", ");
-    return irc.STATUS.STOP;
-  }
-  let l = notes.length;
-  let note = null;
-  while (l--) {
-    note = Note.fromString(notes[l]);
-    msg.reply("%sfrom %s, %s: %s", pm ? "" : nick + ", ",
-      note.from, shared.timeAgo(note.date), note.note);
-  }
-  redisClient.del(key, function(err, res) { if (err) { log.error(err); }});
-  resume;
+  redisClient.lrange(key, 0, -1, function(err, notes) {
+    if (err) {
+      log.error("Redis error in tell.js: %s", err);
+      return irc.STATUS.STOP;
+    }
+    if (!notes || 0 === notes.length) {
+      msg.reply("%sNo unread messages.", pm ? "" : nick + ", ");
+      return irc.STATUS.STOP;
+    }
+    let l = notes.length;
+    let note = null;
+    while (l--) {
+      note = Note.fromString(notes[l]);
+      msg.reply("%sfrom %s, %s: %s", pm ? "" : nick + ", ",
+        note.from, shared.timeAgo(note.date), note.note);
+    }
+    redisClient.del(key, function(err, res) { if (err) { log.error(err); }});
+  });
   return irc.STATUS.STOP;
 }
 

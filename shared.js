@@ -133,38 +133,23 @@ function unescape(input) {
 }
 
 // A couple of plugins do the same JSON-fetching over HTTPS.
-async function getJSON(url) {
-  await res   = https.get(url);
-  const data  = [];
-
-  await chunk = res.on(irc.NODE.SOCKET.EVENT.DATA);
-  data.push(chunk);
-  resume;
-
-  await done  = res.on(irc.NODE.SOCKET.EVENT.END);
-  try {
-    let obj = JSON.parse(data.join(""));
-    return obj;
-  }
-  catch (e) {
-    log.error("Broken JSON at %s", url);
-  }
+function getJSON(url, cb) {
+  https.get(url, function(res) {
+    const data  = [];
+    res.on(irc.NODE.SOCKET.EVENT.DATA, function(chunk) {
+      data.push(chunk);
+    });
+    res.on(irc.NODE.SOCKET.EVENT.END, function() {
+      try {
+        let obj = JSON.parse(data.join(""));
+        return obj;
+      }
+      catch (e) {
+        log.error("Broken JSON at %s", url);
+      }
+    });
+  });
 }
-
-// Always nice to have.
-function compose(/*fn1, fn2 ... fnN*/) {
-  const fns = Array.apply(null, arguments);
-  let l = fns.length - 1;
-  return function(/* args... */) {
-    let ret = fns[l].apply(null, arguments);
-    let i = l;
-    while (i) {
-      ret = fns[--i](ret);
-    }
-    return ret;
-  }
-}
-
 
 // Text
 const ENTITIES = new Map();
@@ -421,7 +406,6 @@ ENTITIES.set("&lsaquo;", "‹");
 ENTITIES.set("&rsaquo;", "›");
 ENTITIES.set("&euro;", "€");
 
-exports.compose     = compose;
 exports.forMe       = forMe;
 exports.getJSON     = getJSON;
 exports.redis       = redisStuff;

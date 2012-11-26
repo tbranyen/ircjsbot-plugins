@@ -13,23 +13,23 @@ const sKey    = "WAT";
 const redisClient = shared.redis.client;
 
 function onWat(msg) {
-  await err, res = redisClient.srandmember(sKey);
-  if (err) {
-    log.error("onWat error: %s", err);
-    return;
-  }
-  if (res) {
-    msg.reply(res);
-  }
-  resume;
+  redisClient.srandmember(sKey, function(err, res) {
+    if (err) {
+      log.error("onWat error: %s", err);
+      return;
+    }
+    if (res) {
+      msg.reply(res);
+    }
+  });
   return irc.STATUS.STOP;
 }
 
 function load(bot) {
-  await data = shared.getJSON(watURL);
-  log.debug("Got wat JSON: %s thingies", data.length);
-  redisClient.sadd(sKey, data);
-  resume;
+  shared.getJSON(watURL, function(data) {
+    log.debug("Got wat JSON: %s thingies", data.length);
+    redisClient.sadd(sKey, data);
+  });
   bot.match(/^:w[au]t\W*$/i, onWat);
   return irc.STATUS.SUCCESS;
 }

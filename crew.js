@@ -29,32 +29,32 @@ function prettyPrint(data) {
 
 // Looks for ?f(inger) <name>, replies with crew data.
 function onFinger(msg, nick) {
-  await err, res = redisClient.hget(crewKey, irc.id(nick));
-  if (err) {
-    log.error("Error getting crüe data: %s", err);
-    return irc.STATUS.ERROR;
-  }
-  if (!res) {
-    msg.reply("%s, no idea who %s is.", msg.from.nick, nick);
-    return;
-  }
-  msg.reply("%s, %s", msg.from.nick, prettyPrint(JSON.parse(res)));
-  resume;
-  return irc.STATUS.STOP
+  redisClient.hget(crewKey, irc.id(nick), function(err, res) {
+    if (err) {
+      log.error("Error getting crüe data: %s", err);
+      return irc.STATUS.ERROR;
+    }
+    if (!res) {
+      msg.reply("%s, no idea who %s is.", msg.from.nick, nick);
+      return;
+    }
+    msg.reply("%s, %s", msg.from.nick, prettyPrint(JSON.parse(res)));
+  });
+  return irc.STATUS.STOP;
 }
 
 function load(bot) {
-  await data = shared.getJSON(crewURL);
-  const headCount = data.length;
-  log.debug("Got crew data:", data);
-  // Now convert from array of objects to object keyed on nick/id
-  // because then we can shove it straight into redis with hmset.
-  const redisData = {};
-  data.forEach(function(crewMember) {
-    redisData[irc.id(crewMember.irc)] = JSON.stringify(crewMember);
+  shared.getJSON(crewURL, function(data) {
+    const headCount = data.length;
+    log.debug("Got crew data:", data);
+    // Now convert from array of objects to object keyed on nick/id
+    // because then we can shove it straight into redis with hmset.
+    const redisData = {};
+    data.forEach(function(crewMember) {
+      redisData[irc.id(crewMember.irc)] = JSON.stringify(crewMember);
+    });
+    redisClient.hmset(crewKey, redisData);
   });
-  redisClient.hmset(crewKey, redisData);
-  resume;
 
   bot.match(/^:(?:\S+)?\W?\bf(?:inger)?\s+(\S+)/i, shared.forMe, onFinger);
   return irc.STATUS.SUCCESS;

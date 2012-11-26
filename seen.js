@@ -26,28 +26,28 @@ function seen(bot, msg, name, num) {
     return irc.STATUS.STOP;
   }
 
-  await err, res = redisClient.lindex(key, ix);
-  log.debug("Replying to `seen` inquiry");
-  if (err) {
-    msg.reply("%s, I went to see, but there was an error: %s", msg.from.nick, err);
-    log.debug("`seen` failed: %s", err);
-    return;
-  }
-  if (!res) {
-    msg.reply("%s, I have never seen %s.", msg.from.nick, name);
-    log.debug("Did not find any entries for %s", name);
-    return;
-  }
-  const parts = res.match(/^(\d+)(.+)/);
-  const date  = new Date(Number(parts[1]));
-  const msg_  = irc.parser.parse(new Buffer(parts[2] + "\r\n"));
-  const ago   = shared.timeAgo(date);
-  if (!msg_) {
-    msg.reply("%s, WTF, could not parse this: %s", msg.from.nick, parts[2]);
-    return;
-  }
-  msg.reply("${msg.from.nick}, I saw ${name} ${ago}, " + describe(bot, msg_, msg));
-  resume;
+  redisClient.lindex(key, ix, function(err, res) {
+    log.debug("Replying to `seen` inquiry");
+    if (err) {
+      msg.reply("%s, I went to see, but there was an error: %s", msg.from.nick, err);
+      log.debug("`seen` failed: %s", err);
+      return;
+    }
+    if (!res) {
+      msg.reply("%s, I have never seen %s.", msg.from.nick, name);
+      log.debug("Did not find any entries for %s", name);
+      return;
+    }
+    const parts = res.match(/^(\d+)(.+)/);
+    const date  = new Date(Number(parts[1]));
+    const msg_  = irc.parser.parse(new Buffer(parts[2] + "\r\n"));
+    const ago   = shared.timeAgo(date);
+    if (!msg_) {
+      msg.reply("%s, WTF, could not parse this: %s", msg.from.nick, parts[2]);
+      return;
+    }
+    msg.reply(msg.from.nick + ", I saw " + name + " " + ago + ", " + describe(bot, msg_, msg));
+  });
 
   return irc.STATUS.STOP;
 }
@@ -106,8 +106,9 @@ function remember(msg) {
 
 function load(bot) {
   bot.match(irc.EVENT.ANY, remember);
-  await msg, nick, i = bot.match(/^:(?:\S+)?\W?\bseen\s+(\S+)\W?(?:\s+(\d+))?\s*$/i, shared.forMe);
-  resume seen(bot, msg, nick, i);
+  bot.match(/^:(?:\S+)?\W?\bseen\s+(\S+)\W?(?:\s+(\d+))?\s*$/i, shared.forMe, function(msg, nick, i) {
+    return seen(bot, msg, nick, i);
+  });
 
   return irc.STATUS.SUCCESS;
 }

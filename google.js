@@ -10,29 +10,31 @@ const shared  = require("./shared");
 
 const unescape = shared.unescape;
 
-async function search(query) {
+function search(query, cb) {
   const url = {
     host: "ajax.googleapis.com",
     path: "/ajax/services/search/web?v=1.0&q=" + encodeURIComponent(query)
   };
-  await res = https.get(url);
-  const data = [];
-  res.on(irc.NODE.SOCKET.EVENT.DATA, data.push.bind(data));
-  await _ = res.on(irc.NODE.SOCKET.EVENT.END);
-  return JSON.parse(data.join("")).responseData.results;
+  https.get(url, function(res) {
+    const data = [];
+    res.on(irc.NODE.SOCKET.EVENT.DATA, data.push.bind(data));
+    res.on(irc.NODE.SOCKET.EVENT.END, function() {
+      cb(JSON.parse(data.join("")).responseData.results);
+    });
+  });
 }
 
 function speak(msg, query, index, person) {
   const idx = index ? index : 0;
-  {
-    await res = search(query);
-    let hit   = res[idx];
+  search(query, function(res) {
+    let hit = res[idx];
     if (!hit) {
-      msg.reply("${msg.from.nick}, sorry, no results for ‟${query}”.");
+      msg.reply(msg.from.nick + ", sorry, no results for ‟" + query + "”.");
       return;
     }
-    msg.reply("${person || msg.from.nick}, ${unescape(hit.titleNoFormatting)} → ${hit.unescapedUrl}");
-  }
+    msg.reply(person || msg.from.nick + ", " + unescape(hit.titleNoFormatting) + " → " + hit.unescapedUrl);
+  });
+
   return irc.STATUS.STOP;
 }
 

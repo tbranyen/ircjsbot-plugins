@@ -1,65 +1,66 @@
-const fmt   = require( "util" ).format
-    , https = require( "https" )
-    , irc   = require( "irc-js" )
-    , share = require( "./shared" )
-    , jQJSON = require( "./jqapi.json" )
-    , logger = irc.logger.get( "ircjs" )
+/** @module jqapi */
 
-const onJQAPI = function( msg ) {
+"use strict";
 
-  logger.debug( "onJQAPI triggered" )
-  
-  const splat = msg.params[ 1 ].split( ' ' )
-      , s = splat[ 0 ].replace( ':?', '' )
-      , to = ( splat[ 1 ] === '@' && splat[ 2 ] && splat.length === 3 ) ? splat[ 2 ] : ''
-      , a = jQJSON
-      
-  var res = ''
-  
-  if ( splat.length ) {
-      Object.keys( a ).map( function( k ) {
-        
-        var name = a[ k ].name
-          , title = a[ k ].title
-          , desc = a[ k ].desc
-          , url = a[ k ].url
-        
-        // search for selector
-        if ( s.indexOf( ':' ) >= 0 ) {
-          if ( title.indexOf( 'Selector' ) >= 0 && name == s.replace( ':', '' ) ) {
-            res = title + ': ' + desc + ' ' + url
-            return
-          }
-          
-        // everything else
-        } else if ( name.toLowerCase() == s.toLowerCase() && title.indexOf( ':' ) == -1 ) {
-          res = title + ': ' + desc + ' ' + url
-          return
-        }
-      })
+const fmt     = require("util").format;
+const https   = require("https");
+const irc     = require("irc-js");
+const shared  = require("./shared");
+const jQJSON  = require("./jqapi.json");
+const log     = irc.logger.get("ircjs-plugin-jqapi");
+
+function onAPI(msg, query, index, nick) {
+  log.debug("in onAPI")
+  const results = [];
+  const num     = index ? index : 1;
+  const replyTo = nick || msg.from.nick;
+  let hits = 0;
+  for (let key in jQJSON) {
+    let name  = jQJSON[key].name;
+    let title = jQJSON[key].title;
+    let desc  = jQJSON[key].desc;
+    let url   = jQJSON[key].url;
+    // search for selector
+    if (-1 !== query.indexOf(":") &&
+        title.indexOf("Selector") >= 0 &&
+        name === query.replace(":", "")) {
+      results.push(fmt("%s: %s %s", title, desc, url));
+      ++hits;
     }
-    
-    // say what you need to say
-    if ( res != '' ) {
-      if ( to ) {
-        msg.reply( to + ': ' + res )
-      } else {
-        msg.reply( msg.from.nick + ': ' + res )
-      }
+    // everything else
+    else if (name.toLowerCase() === query.toLowerCase() &&
+        title.indexOf(":") === -1) {
+      results.push(fmt("%s: %s %s", title, desc, url));
+      ++hits;
     }
-}
-
-const load = function( bot ) {
-  bot.lookFor( /\?([^#@]+)(?:\s*#([1-9]))?(?:\s*@\s*([-\[\]|_\w]+))?$/, onJQAPI )
-  return irc.STATUS.SUCCESS
-}
-
-const eject = function() {
-  return irc.STATUS.SUCCESS
-}
-
-module.exports =
-  { name:   "JQAPI"
-  , load:   load
-  , eject:  eject
+    if (hits === num) {
+      break;
+    }
   }
+  if (hits) {
+    if (index && hits < index) {
+      msg.reply("%s, I only found %d match%s.", replyTo, hits, hits === 1 ? "" : "es");
+    }
+    else {
+      msg.reply("%s, %s", replyTo, results.pop());
+    }
+  }
+  else {
+    msg.reply("%s, no matches.", replyTo);
+  }
+  return irc.STATUS.STOP;
+}
+
+function load(client) {
+  client.match(/\bapi\s+(\S+)(?:\s*([1-9]+))?(?:\s*@\s*(\S+)[\s\W]*)?$/,
+    shared.forMe, onAPI);
+  return irc.STATUS.SUCCESS;
+}
+
+function unload() {
+  return irc.STATUS.SUCCESS;
+}
+
+exports.name    = "jQuery API";
+exports.load    = load;
+exports.unload  = unload;

@@ -2,45 +2,50 @@
  * @module 8ball
  */
 
-const irc   = require( "irc-js" )
-    , fmt   = require( "util" ).format
+const irc = require("irc-js");
 
-const responses =
-  [ 'It is certain'
-  , 'It is decidedly so'
-  , 'Without a doubt'
-  , 'Yes – definitely'
-  , 'You may rely on it'
-  , 'As I see it, yes'
-  , 'Most likely'
-  , 'Outlook good'
-  , 'Yes'
-  , 'Signs point to yes'
-  , 'Reply hazy, try again'
-  , 'Ask again later'
-  , 'Better not tell you now'
-  , 'Cannot predict now'
-  , 'Concentrate and ask again'
-  , 'Don\'t count on it'
-  , 'My reply is no'
-  , 'My sources say no'
-  , 'Outlook not so good'
-  , 'Very doubtful'
-  ]
+const responses = [
+  "it is certain",
+  "it is decidedly so",
+  "without a doubt",
+  "yes — definitely",
+  "you may rely on it",
+  "as I see it, yes",
+  "most likely",
+  "outlook good",
+  "yes",
+  "signs point to yes",
+  "reply hazy, try again",
+  "ask again later",
+  "better not tell you now",
+  "cannot predict now",
+  "concentrate and ask again",
+  "don’t count on it",
+  "my reply is no",
+  "my sources say no",
+  "outlook not so good",
+  "very doubtful"
+];
 
-const getFortune = function( msg ) {
-  msg.reply( responses[ Math.floor( responses.length * Math.random() ) ] )
+function getFortune(msg) {
+  const index = Math.floor(responses.length * Math.random());
+  msg.reply("%s, %s.", msg.from.nick, responses[index]);
+  return irc.STATUS.STOP;
 }
 
-const load = function( client ) {
-  client.lookFor( fmt( "^:%s\\b(.+)\\?\s*$", client.user.nick ), getFortune )
-  return irc.STATUS.SUCCESS
+function isForMe(msg) {
+  return msg.params[1].indexOf(msg.client.user.nick) === 1;
 }
 
-const eject = function() {
-  return irc.STATUS.SUCCESS
+function load(client) {
+  client.match(/\?\s*$/, isForMe, getFortune);
+  return irc.STATUS.SUCCESS;
 }
 
-exports.name  = "8ball"
-exports.load  = load
-exports.eject = eject
+function unload() {
+  return irc.STATUS.SUCCESS;
+}
+
+exports.name    = "8ball";
+exports.load    = load;
+exports.unload  = unload;

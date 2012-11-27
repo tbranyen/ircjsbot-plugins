@@ -1,69 +1,43 @@
-const redis = require( "redis" )
-    , fmt   = require( "util" ).format
-    , https = require( "https" )
-    , irc   = require( "irc-js" )
-    , share = require( "./shared" )
+/** @module wat */
 
-const TOKEN = share.redis.TOKEN
-    , HOST  = share.redis.HOST
-    , PORT  = share.redis.PORT
+"use strict";
 
-const logger = irc.logger.get( "ircjs" )
-    , sKey   = "WAT"
+const fmt     = require("util").format;
+const irc     = require("irc-js");
+const shared  = require("./shared");
 
-var rc = null
+const log     = irc.logger.get("ircjs-plugin-wat");
+const watURL  = { host: "raw.github.com", path: "/gf3/WAT/master/wat.json" };
+const sKey    = "WAT";
 
-const handleError = function( err ) {
-  logger.error( "Wat Redis client error: %s", err )
-}
+const redisClient = shared.redis.client;
 
-// Go get the latest JSON
-const getJson = function() {
-  https.get( { host: "raw.github.com", path: "/gf3/WAT/master/wat.json" }
-    , function( res ) {
-        const data = []
-        res.on( irc.NODE.SOCKET.EVENT.DATA, function( d ) {
-          data.push( d )
-        } )
-        res.on( irc.NODE.SOCKET.EVENT.END, function() {
-          const arr = JSON.parse( data.join( '' ) )
-          logger.debug( "Got wat JSON: %s thingies", arr.length )
-          rc.sadd( sKey, arr )
-        } )
-  } )
-}
-
-const onWat = function( msg ) {
-  logger.debug( "onWat triggered" )
-  rc.srandmember( sKey, function( err, res ) {
-    if ( err ) {
-      logger.error( "onWat error: %s", err )
-      return
+function onWat(msg) {
+  redisClient.srandmember(sKey, function(err, res) {
+    if (err) {
+      log.error("onWat error: %s", err);
+      return;
     }
-    if ( res )
-      msg.reply( res )
-  } )
+    if (res) {
+      msg.reply(res);
+    }
+  });
+  return irc.STATUS.STOP;
 }
 
-const load = function( bot ) {
-  if ( rc )
-    return irc.STATUS.SUCCESS
-  rc = redis.createClient( PORT, HOST )
-  rc.auth( TOKEN )
-  rc.on( share.redis.EVENT.ERROR, handleError )
-  bot.lookFor( /\bwat\b/, onWat )
-  getJson()
-  return irc.STATUS.SUCCESS
+function load(bot) {
+  shared.getJSON(watURL, function(data) {
+    log.debug("Got wat JSON: %s thingies", data.length);
+    redisClient.sadd(sKey, data);
+  });
+  bot.match(/^:w[au]t\W*$/i, onWat);
+  return irc.STATUS.SUCCESS;
 }
 
-const eject = function() {
-  if ( rc )
-    rc.quit()
-  return irc.STATUS.SUCCESS
+function unload() {
+  return irc.STATUS.SUCCESS;
 }
 
-module.exports =
-  { name:   "Wat"
-  , load:   load
-  , eject:  eject
-  }
+exports.name    = "Wat!";
+exports.load    = load;
+exports.unload  = unload;

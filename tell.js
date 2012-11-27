@@ -3,165 +3,125 @@
  *        Then remove when list is empty.
  */
 
-const redis = require( "redis" )
-    , irc   = require( "irc-js" )
-    , fmt   = require( "util" ).format
-    , share = require( "./shared" )
+"use strict";
 
-const rds = share.redis
+const irc     = require("irc-js");
+const fmt     = require("util").format;
+const shared  = require("./shared");
 
-const logger = irc.logger.get( "ircjs" )
+const rds = shared.redis;
+const redisClient = rds.client;
 
-const RPREFIX = "TELL"
+const log = irc.logger.get("ircjs-plugin-tell");
+const KEY = "TELL";
+const SEP = String.fromCharCode(0xA);
 
-const DELIM = String.fromCharCode( 0xA )
-
-var tellInstance = null
-
-const Note = function( from, to, note ) {
-  this.date = Date.now()
-  this.from = from
-  this.note = note
-  this.new  = true
+function Note(from, to, note) {
+  this.date = Date.now();
+  this.from = from;
+  this.note = note;
+  this.new  = true;
 }
 
 Note.prototype.toString = function() {
-  return [ this.new, this.date, this.from, this.to, this.note ].join( DELIM )
+  return [this.new, this.date, this.from, this.to, this.note].join(SEP);
+};
+
+Note.fromString = function(s) {
+  const parts = s.split(SEP);
+  const note  = new Note(parts[2], parts[3], parts[4]);
+  note.new  = parts[0] === "true";
+  note.date = Number(parts[1]);
+  return note;
 }
 
-Note.fromString = function( s ) {
-  const parts = s.split( DELIM )
-      , note  = new Note( parts[2], parts[3], parts[4] )
-  note.new  = parts[0] === "true"
-  note.date = Number( parts[1] )
-  return note
-}
-
-const Tell = function( bot ) {
-  if ( tellInstance )
-    return tellInstance
-  tellInstance = this
-  this.client = redis.createClient( rds.PORT, rds.HOST )
-  this.client.on( rds.EVENT.ERROR, this.error.bind( this ) )
-  this.client.auth( rds.TOKEN )
-  this.bot = bot
-}
-
-Tell.prototype.error = function( err ) {
-  logger.error( "tell.js redis client error: %s", err )
-}
-
-Tell.prototype.tell = function( msg, num ) {
+function notify(msg, _) {
   // Probably full of async-y bugs, how to update a bunch of items at once and get a callback?
-  const nick = msg.from.nick
-      , key = rds.key( msg.from, RPREFIX )
-  this.client.lrange( key, 0, -1, function( err, notes ) {
-    if ( err ) {
-      logger.error( "Redis error in tell.js Tell.prototype.tell: %s", err )
-      return
+  const nick = msg.from.nick;
+  const key  = rds.key(msg.from, KEY);
+  redisClient.lrange(key, 0, -1, function(err, notes) {
+    if (err) {
+      log.error("Redis error in tell.js Tell.prototype.notify: %s", err);
+      return;
     }
-    if ( ! notes || 0 === notes.length )
-      return
-    
-    var reply = null
-      , note = null
-      , new_ = 0
-      , l = notes.length
-      , i
-    for ( i = 0; i < l ; ++i ) {
-      note = Note.fromString( notes[i] )
-      if ( ! note.new )
-        continue
-      ++new_
-      note.new = false
-      logger.debug( "Marking note from %s (%s) as not new", note.from, note )
-      this.client.lset( key, i, note.toString() )
+    if (!notes || 0 === notes.length) {
+      return;
     }
-    if ( 0 === new_ )
-      return
-    reply = fmt( "%s, you have %s, just say “read” to me when you wish to read %s."
-               , nick, new_ === 1 ? "one new message" : new_ + " new messages"
-               , new_ === 1 ? "it" : "them" )
-    msg.reply( reply )
-  }.bind( this ) )
+    let new_  = 0;
+    for (let i = 0, l = notes.length; i < l; ++i) {
+      let note = Note.fromString(notes[i]);
+      if (!note.new) {
+        continue;
+      }
+      ++new_;
+      note.new = false;
+      log.debug("Marking note from %s (%s) as not new", note.from, note);
+      redisClient.lset(key, i, note.toString(),
+        function(err, res) { if (err) { log.error(err); }});
+    }
+    if (0 === new_) {
+      return;
+    }
+    const one = new_ === 1;
+    msg.reply("%s, you have %s, say “read” to me when you wish to read %s.",
+      nick, one ? "one new message" : new_ + " new messages", one ? "it" : "them");
+  });
 }
 
-Tell.prototype.read = function( msg ) {
-  const nick = msg.from.nick
-      , pm = msg.params[0] === this.bot.user.nick
-      , forMe = pm || -1 !== msg.params[1].indexOf( this.bot.user.nick )
-      , key = rds.key( msg.from, RPREFIX )
-
-  if ( ! forMe )
-    return
-
-  this.client.lrange( key, 0, -1, function( err, notes ) {
-    if ( err ) {
-      logger.error( "Redis error in tell.js: %s", err )
-      return
+function read(bot, msg) {
+  const nick = msg.from.nick;
+  const key  = rds.key(msg.from, KEY);
+  const pm   = msg.params[0] === bot.user.nick;
+  redisClient.lrange(key, 0, -1, function(err, notes) {
+    if (err) {
+      log.error("Redis error in tell.js: %s", err);
+      return irc.STATUS.STOP;
     }
-
-    if ( ! notes || 0 === notes.length ) {
-      msg.reply( "%sNo unread messages.", pm ? "" : nick + ", " )
-      return
+    if (!notes || 0 === notes.length) {
+      msg.reply("%sNo unread messages.", pm ? "" : nick + ", ");
+      return irc.STATUS.STOP;
     }
-    var l = notes.length
-      , note = null
-    while ( l-- ) {
-      note = Note.fromString( notes[l] )
-      msg.reply( "%sfrom %s, %s ago: %s", pm ? "" : nick + ", "
-        , note.from, share.timeAgo( note.date ), note.note )
+    let l = notes.length;
+    let note = null;
+    while (l--) {
+      note = Note.fromString(notes[l]);
+      msg.reply("%sfrom %s, %s: %s", pm ? "" : nick + ", ",
+        note.from, shared.timeAgo(note.date), note.note);
     }
-    this.client.del( key )
-    return irc.STATUS.STOP  // Prevent "tell" from doing anything
-  }.bind( this ) )
+    redisClient.del(key, function(err, res) { if (err) { log.error(err); }});
+  });
+  return irc.STATUS.STOP;
 }
 
-Tell.prototype.add = function( msg, name, note ) {
-  const forMe = -1 !== msg.params[1].indexOf( this.bot.user.nick )
-      , from  = msg.from.nick
-      , key   = rds.key( name, RPREFIX )
-  if ( ! forMe )
-    return
-  if ( key === rds.key( from, RPREFIX ) ) {
-    msg.reply( "%s, %s", from, note )
-    return
+function add(bot, msg, name, note) {
+  const from  = msg.from.nick;
+  const key   = rds.key(name, KEY);
+  if (irc.id(name) == msg.from.id) {
+    msg.reply("%s, %s", from, note);
+    return irc.STATUS.STOP;
   }
-  if ( key === rds.key( this.bot.user.nick, RPREFIX ) ) {
-    msg.reply( "%s, whatever you say…", from )
-    return
+  if (irc.id(name) == bot.user.id) {
+    msg.reply("\x01ACTION explodes\x01");
+    return irc.STATUS.STOP;
   }
-  const rnote = new Note( from, key, note )
-  this.client.lpush( key, rnote.toString() )
-  msg.reply( "%s, I’ll tell %s about that.", from, name )
-  logger.debug( "Added note from %s to %s: %s", from, name, note )
+  const rnote = new Note(from, key, note);
+  redisClient.lpush(key, rnote.toString());
+  msg.reply("%s, I’ll tell %s about that.", from, name);
+  log.debug("Added note from %s to %s: %s", from, name, note);
+  return irc.STATUS.STOP;
 }
 
-Tell.prototype.disconnect = function( msg ) {
-  logger.info( "Telling tell.js Redis client to quit" )
+function load(bot) {
+  bot.match(/^(?:(?!\bread\b).)*$/, notify);
+  bot.match(/^:(?:\S+)?\W?\btell\s+(\S+)\W?\s+(.+)\s*$/i, shared.forMe, add.bind(null, bot));
+  bot.match(/^:(?:\S+)?\W?\bread[\W\s]*$/i, shared.forMe, read.bind(null, bot));
+  return irc.STATUS.SUCCESS;
 }
 
-// Implement Plugin interface.
-
-const load = function( client ) {
-  const t = new Tell( client )
-  client.observe( irc.COMMAND.PRIVMSG, t.tell.bind( t ) )
-  client.lookFor( fmt( "^:(?:\\b%s\\b[\\s,:]+|[@!\\/?\\.])tell\\s+([-`_\\{\\}\\[\\]\\^\\|a-z0-9]+)[:,]?\\s+(.+)"
-    , client.user.nick ), t.add.bind( t ) )
-  client.lookFor( fmt( "^:(?:\\b%s\\b[\\s,:]+|[@!\\/?\\.])read\\b"
-    , client.user.nick ), t.read.bind( t ) )
-  logger.info( "Registered Tell plugin" )
-  return irc.STATUS.SUCCESS
+function unload() {
+  return irc.STATUS.SUCCESS;
 }
 
-const eject = function() {
-  tellInstance.client.quit()
-  tellInstance = null
-  return irc.STATUS.SUCCESS
-}
-
-module.exports =
-  { name: "Tell"
-  , load: load
-  , eject: eject
-  }
+exports.name    = "Tell";
+exports.load    = load;
+exports.unload  = unload;

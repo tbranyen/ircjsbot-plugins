@@ -5,6 +5,7 @@
 const irc     = require("irc-js");
 const shared  = require("./shared");
 
+const REMOVE  = irc.STATUS.REMOVE;
 const STOP    = irc.STATUS.STOP;
 const SUCCESS = irc.STATUS.SUCCESS;
 const forMe   = shared.forMe;
@@ -14,15 +15,16 @@ function load(bot) {
   bot.match(/\bjoin\s+(\S+)\s*$/i, forMe, function(msg, chan) {
     const from = msg.from.nick;
     if (bot.channels.has(irc.id(chan))) {
-      return msg.reply(from + ", I am already in " + chan + ".");
+      msg.reply(from + ", I am already in " + chan + ".");
+      return STOP;
     }
     // Reply when joined.
     bot.join(chan, function(chan, err) {
-      if (!err) {
-        msg.reply(from + ", I am now in " + chan + ".");
+      if (err) {
+        msg.reply(from + ", there was an error when I tried to join " + chan + ": " + err.message);
         return;
       }
-      msg.reply(from + ", there was an error when I tried to join " + name + ": " + err.message);
+      msg.reply(from + ", I am now in " + chan + ".");
     });
   });
 
@@ -53,6 +55,7 @@ function load(bot) {
   bot.match(/\bquit((?:\s+).+)?\s*$/i, forMe, function(msg, reason) {
     bot.quit(reason ? reason : msg.from.nick + " told me to quit, bye!");
     process.exit();
+    return STOP | REMOVE;
   });
 
   // Get invited.

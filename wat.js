@@ -13,6 +13,7 @@ const sKey    = "WAT";
 const redisClient = shared.redis.client;
 
 function onWat(msg) {
+  if (msg.params[0] === "#jquery") return;
   redisClient.srandmember(sKey, function(err, res) {
     if (err) {
       log.error("onWat error: %s", err);

@@ -4,7 +4,7 @@
 
 "use strict";
 
-const http   = require("http");
+const http    = require("http");
 const irc     = require("irc-js");
 const shared  = require("./shared");
 

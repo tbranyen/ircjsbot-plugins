@@ -53,14 +53,10 @@ const chars = {
     '\u2234' : '\u2235'
 }
 
-function flipString(str) {
-  return str.toLowerCase().split('').map(function(c) {
-    return chars[c] ? chars[c] : c;
-  }).reverse().join('');
-}
-
 function kickFlip(msg, query) {
-  msg.reply('(╯°□°）╯︵' + flipString(query));
+  msg.reply('(╯°□°）╯︵' + query.toLowerCase().split('').map(function(c) {
+    return chars[c] ? chars[c] : c;
+  }).reverse().join(''));
 }
 
 // Implement Plugin interface.

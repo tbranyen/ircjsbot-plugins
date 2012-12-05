@@ -8,7 +8,6 @@ const fmt     = require("util").format;
 const http    = require("http");
 const irc     = require("irc-js");
 const shared  = require("./shared");
-const log     = irc.logger.get("ircjs-plugin-caniuse");
 
 var links;
 

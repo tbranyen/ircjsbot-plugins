@@ -4,7 +4,10 @@
 
 "use strict";
 
+<<<<<<< HEAD
 const fmt     = require("util").format;
+=======
+>>>>>>> f740785a80a034d7e767a9455defbb69693de899
 const http    = require("http");
 const irc     = require("irc-js");
 const shared  = require("./shared");

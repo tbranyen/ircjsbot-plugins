@@ -142,10 +142,10 @@ function getJSON(url, cb) {
     res.on(irc.NODE.SOCKET.EVENT.END, function() {
       try {
         let obj = JSON.parse(data.join(""));
-        return obj;
+        cb(obj);
       }
       catch (e) {
-        log.error("Broken JSON at %s", url);
+        log.error("Broken JSON from:", url, " -- ", data.join(""));
       }
     });
   });

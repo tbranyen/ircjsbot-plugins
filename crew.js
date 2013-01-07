@@ -11,7 +11,7 @@ const log     = irc.logger.get("ircjs-plugin-crew");
 const crewKey = "CREW";
 const crewURL = {
   host: "raw.github.com",
-  path: "/jquery-ot/ot-crew.com/master/public/crew.json"
+  path: "/ot-crew/ot-crew.com/master/public/crew.json"
 };
 
 const redisClient = shared.redis.client;

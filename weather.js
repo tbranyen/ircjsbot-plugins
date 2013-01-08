@@ -28,7 +28,7 @@ var crew,
 var APIKEYS = ['dc2f9ffc1dacb602','63dae8bbfe95a2b8']
 
 function onWeather(msg, query, index, nick) {
-  if (query == '') {
+  if (!query) {
     query = msg.from.nick;
   }
 
@@ -86,12 +86,13 @@ function onWeather(msg, query, index, nick) {
             feelslike = " Feels like \x02" + j.current_observation.feelslike_f + "℉ / " + j.current_observation.feelslike_c + "℃\x02";
           }
 
-          msg.reply("%s %s \x02%s℉ / %s℃\x02. %s"
+          msg.reply("%s %s \x02%s℉ / %s℃\x02. %s [%s]"
             , currIcons
             , j.current_observation.weather
             , j.current_observation.temp_f
             , j.current_observation.temp_c
             , feelslike
+            , j.current_observation.display_location.full
           );
         }
 
@@ -111,10 +112,12 @@ function load(bot) {
     });
 
 
-  bot.match(/\bw(?:eather)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
-    shared.forMe, onWeather);
-  return irc.STATUS.SUCCESS;
-}
+    bot.match(/\bw(?:eather)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
+      shared.forMe, onWeather);
+    bot.match(/`w(?:eather)?/,
+      shared.forMe, onWeather);  
+    return irc.STATUS.SUCCESS;
+  }
 
 function unload() {
   return irc.STATUS.SUCCESS;

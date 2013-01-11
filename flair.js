@@ -4,13 +4,31 @@
 const irc = require( "irc-js" )
 
 const FLAIR =
-  [ [ /\balligator\b/i, "---,==,'<" ]
-  , [ /\bshrugs\b/i,    "¯\\_(ツ)_/¯" ]
-  , [ /\by u\b/i,       "(屮'Д')屮" ]
+  [ [ /\balligator\b/i,   "---,==,'<" ]
+  , [ /\bshrugs\b/i,      "¯\\_(ツ)_/¯" ]
+  , [ /\by u\b/i,         "(屮'Д')屮" ]
+  , [ /\bdentata\b/i,   [ "(▼▼▼▼▼▼▼▼▼)"
+                        , "8==========D"
+                        , "(▲▲▲▲▲▲▲▲▲)" ] ] // ♥ u coldhead ;)
+  , [ /\bgol\b/i,
+      [ "      _________________________________"
+      , "     /  _______/  ____   /  ____   /  /\\"
+      , "    /  / _____/  /   /  /  /___/  /  / /"
+      , "   /  / /_   /  /   /  /  ____   /  / /"
+      , "  /  /___/  /  /___/  /  /\\__/  /  /_/____"
+      , " /_________/_________/__/ / /__/_________/\\!!!!"
+      , " \\__________\\_________\__\\/  \\__\\_________\\/!!!!" ] ]
+  , [ /\bi love u b-ot\b/i, [ "I", "♥", "U", "2" ] ]
   ]
 
 const speak = function( reply, msg ) {
-  msg.reply( reply )
+  if ( reply === Object( reply ) ) {
+    reply.forEach( function( reply ) {
+      msg.reply( reply )
+    } )
+  } else {
+    msg.reply( reply )
+  }
 }
 
 const load = function( bot ) {

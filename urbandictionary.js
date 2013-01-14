@@ -11,7 +11,6 @@ const shared  = require("./shared");
 const log     = irc.logger.get("ircjs-plugin-domains");
 
 function onUrbandictionary(msg, query, index, nick) {
-  console.log(query);
   const q = query.replace(/ /g,"+")
     , replyTo = nick || msg.from.nick
     , url = {
@@ -27,8 +26,6 @@ function onUrbandictionary(msg, query, index, nick) {
         
         const j = JSON.parse(data.join(""));
         
-        console.log(j);
-
         if (j.result_type == "no_results") {
           msg.reply("Nothing found for \x02" + query + "\x02");
           return;

@@ -32,8 +32,7 @@ function onConvert(msg, query, index, nick) {
           msg.reply("Error converting...");
         }
         else {
-          var response = j.lhs + " \x02=\x02 " + j.rhs;
-          msg.reply(response);
+          msg.reply(j.lhs + " \x02=\x02 " + j.rhs);
         }
       });
 

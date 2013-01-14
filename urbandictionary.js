@@ -42,7 +42,7 @@ function onUrbandictionary(msg, query, index, nick) {
 }
 
 function load(bot) {
-  bot.match(/\bud\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
+  bot.match(/^:[!,./\?@`]ud\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
     shared.forMe, onUrbandictionary);
   return irc.STATUS.SUCCESS;
 }

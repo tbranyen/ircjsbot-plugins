@@ -100,9 +100,9 @@ function load(bot) {
       crew = obj;
     });
 
-    bot.match(/^:[`,?\.]w(?:eather)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
+    bot.match(/^:[!,./\?@`]w(?:eather)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
       shared.forMe, onWeather);
-    bot.match(/^:[`,?\.]w(?:eather)?/,
+    bot.match(/^:[!,./\?@`]w(?:eather)?/,
       shared.forMe, onWeather);
 
     return irc.STATUS.SUCCESS;

@@ -113,8 +113,9 @@ function add(bot, msg, name, note) {
 
 function load(bot) {
   bot.match(/^(?:(?!\bread\b).)*$/, notify);
-  bot.match(/^:(?:\S+)?\W?\btell\s+(\S+)\W?\s+(.+)\s*$/i, shared.forMe, add.bind(null, bot));
-  bot.match(/^:(?:\S+)?\W?\bread[\W\s]*$/i, shared.forMe, read.bind(null, bot));
+  bot.match(/^:[!,./\?@`]tell\s+(\S+)\W?\s+(.+)\s*$/i, add.bind(null, bot));
+  bot.match(/^:[!,./\?@`]read[\W\s]*$/i, read.bind(null, bot));
+
   return irc.STATUS.SUCCESS;
 }
 

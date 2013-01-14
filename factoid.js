@@ -61,12 +61,12 @@ function forget(msg, key) {
 }
 
 // Implement Plugin interface.
-
+//
 function load(bot) {
-  bot.match(/^:(?:\W|\S+\W?)?(\w\S+) +is[:,]? +(.+)/, shared.forMe, learn);
-  bot.match(/\bforget\s+([-_.:|\/\\\w]+)$/, shared.forMe, forget);
-  bot.match(/([-_.:|\/\\\w]+)(?:\s*@\s*([-\[\]\{\}`|_\w]+))?\s*$/,
-    shared.forMe, speak);
+  bot.match(/^:[!,./\?@`](\w\S+)\s+is[:,]?\s+(.+)/, learn);
+  bot.match(/^:[!,./\?@`]forget[:,]?\s+(\w\S+)/, forget);
+  bot.match(/^:[!,./\?@`](\w\S+)(?:\s*@\s*([-\[\]\{\}`|_\w]+))?\s*$/, speak);
+
   return irc.STATUS.SUCCESS;
 }
 

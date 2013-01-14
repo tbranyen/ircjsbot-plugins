@@ -49,9 +49,7 @@ function onConvert(msg, query, index, nick) {
 
 
 function load(bot) {
-
-  bot.match(/\bcalc(?:ulate)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
-    shared.forMe, onConvert);
+  bot.match(/^:[!,./\?@`]calc(?:ulate)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i, onConvert);
   return irc.STATUS.SUCCESS;
 }
 

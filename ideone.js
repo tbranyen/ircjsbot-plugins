@@ -110,7 +110,7 @@ function load(bot) {
     lang = languages[lang];
     ideone.call("createSubmission", [USER, PASS, code, lang, "", true, false], function(error, result){
     	if (result["error"] == "OK"){
-    		console.log("link: http://ideone.com/" + link);
+    		console.log("link: http://ideone.com/" + result["link"]);
     		wait(result["link"], function(res) {
           console.log(JSON.stringify(res));
           if (!res["output"]) {

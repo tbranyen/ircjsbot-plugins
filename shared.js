@@ -13,7 +13,7 @@ const log = irc.logger.get("ircjs-plugin-shared");
 
 // Redis stuff
 const TOKEN = "ff774f90da063a0dfa783172f16af4e3";
-const HOST  = "46.38.167.162";
+const HOST  = "localhost";
 const PORT  = 6379;
 
 // Redis events

@@ -38,11 +38,25 @@ function speak(msg, query, index, person) {
   return irc.STATUS.STOP;
 }
 
+function mdn(msg, query, index, person) {
+  const mquery = 'site:developer.mozilla.org ' + query;
+  speak(msg, mquery, index, person);
+}
+
+function wiki(msg, query, index, person) {
+  const wquery = 'site:en.wikipedia.org ' + query;
+  speak(msg, wquery, index, person);
+}
+
 // Implement Plugin interface.
 
 function load(bot) {
   bot.match(/\bg(?:oogle)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
     shared.forMe, speak);
+  bot.match(/\bm(?:dn)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
+    shared.forMe, mdn);
+  bot.match(/\bwiki(?:pedia)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
+    shared.forMe, wiki);
   return irc.STATUS.SUCCESS;
 }
 

@@ -63,7 +63,7 @@ function forget(msg, key) {
 // Implement Plugin interface.
 //
 function load(bot) {
-  bot.match(/^:[!,./\?@`](\w\S+)\s+is[:,]?\s+(.+)/, learn);
+  bot.match(/^:[!,/\?@`](\w\S+)\s+is[:,]?\s+(.+)/, learn);
   bot.match(/^:[!,./\?@`]forget[:,]?\s+(\w\S+)/, forget);
   bot.match(/^:[!,./\?@`](\w\S+)(?:\s*@\s*([-\[\]\{\}`|_\w]+))?\s*$/, speak);
 

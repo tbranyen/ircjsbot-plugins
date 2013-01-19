@@ -76,16 +76,8 @@ function JsonRpcWrapper() {
 // ideone client
 var ideone = new JsonRpcWrapper();
 
-// test
-/*
-ideone.call("getLanguages", [user, pass], function(error, result) {
-	console.log("getLanguages: " + JSON.stringify(result["languages"]));
-});
-*/
-
 function wait(link, cb) {
 	ideone.call("getSubmissionStatus", [USER, PASS, link], function(error, result){
-		console.log(result);
 		if (result["status"] != 0){
 			setTimeout(function() { wait(link, cb); }, 1000);
 		} else {
@@ -110,9 +102,7 @@ function load(bot) {
     lang = languages[lang];
     ideone.call("createSubmission", [USER, PASS, code, lang, "", true, false], function(error, result){
     	if (result["error"] == "OK"){
-    		console.log("link: http://ideone.com/" + result["link"]);
     		wait(result["link"], function(res) {
-          console.log(JSON.stringify(res));
           if (!res["output"]) {
             msg.reply("No output.");
             return;

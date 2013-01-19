@@ -1,8 +1,8 @@
 /**
  * @module desc
  * This module fetches titles + descriptions for sites shared in a channel IF the message is simply an URL
- * This module is also an example of how to use cheerio to `parse` html.
- * Dependencies not included in ircjsbot: cheerio + request (request because it follows redirects, which the entire internet is build on, apparently)
+ * This module is also an example of how to use cheerio to walk the dom (ala jQuery).
+ * Dependencies not included in ircjsbot are: cheerio + request (request because it follows redirects, which the entire internet is built on, apparently).
  */
 
 "use strict";

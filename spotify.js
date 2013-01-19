@@ -76,7 +76,7 @@ function lookup(msg, type, id) {
     delete res[type].href;
     return msg.reply(printItem(res[type]));
   });
-  return STOP;
+  return SUCCESS;
 }
 
 /** Search the Spotifies.
@@ -103,7 +103,7 @@ function search(msg, type, query, index) {
     msg.reply(printItem(res[type + "s"][index - 1]));
   });
 
-  return STOP;
+  return SUCCESS;
 }
 
 // Default HTTP options.

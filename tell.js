@@ -63,8 +63,10 @@ function notify(msg, _) {
       return;
     }
     const one = new_ === 1;
-    msg.reply("%s, you have %s, say “read” to me when you wish to read %s.",
-      nick, one ? "one new message" : new_ + " new messages", one ? "it" : "them");
+    msg.reply("%s, you have %s%s, use `read when you wish to read %s.",
+      nick, one ? "one new message" : new_ + " new messages",
+      notes.length === new_ ? "" : " (and " + (notes.length - new_) + " unread)",
+      one ? "it" : "them");
   });
 }
 

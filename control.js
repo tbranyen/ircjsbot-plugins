@@ -52,9 +52,8 @@ function load(bot) {
   });
 
   // Quit.
-  bot.match(/\bquit((?:\s+).+)?\s*$/i, forMe, function(msg, reason) {
+  bot.match(/\bquit(?:\s+(.+))?\s*$/i, forMe, function(msg, reason) {
     bot.quit(reason ? reason : msg.from.nick + " told me to quit, bye!");
-    process.exit();
     return STOP | REMOVE;
   });
 
@@ -62,7 +61,7 @@ function load(bot) {
   bot.match(irc.COMMAND.INVITE, function(msg) {
     // Some clients send chan name as a trailing param :/
     bot.join(msg.params[1].replace(/^:/, ""), function(chan, err) {
-      if (err) return;
+      if (err) { return; }
       chan.say("Thanks for inviting me, " + msg.from.nick);
     });
     return STOP;

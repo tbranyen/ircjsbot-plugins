@@ -29,7 +29,7 @@ const popularity  = new Array(11);
 function printPopularity(n) {
   const pop = Math.round(n * 10);
   for (let i = 0; i < 10; ++i) {
-    popularity[i] = i > pop ? POPBAR : POPBARLIT;
+    popularity[i] = i >= pop ? POPBAR : POPBARLIT;
   }
   return popularity.join("");
 }
@@ -93,11 +93,11 @@ function search(msg, type, query, index) {
     const results = res ? Math.min(res["info"]["num_results"] -
       res["info"]["offset"], res["info"]["limit"]) : 0;
     if (!results) {
-      msg.reply(msg.from.nick + ", didn’t find any " + type + " matching “" + query + "”.");
+      msg.reply("Didn’t find any " + type + " matching “" + query + "”.");
       return;
     }
     if (results < index) {
-      msg.reply(msg.from.nick + ", I only found " + results + " " + type + (results === 1 ? "" : "s") + ", you asked for #" + index);
+      msg.reply("I only found " + results + " " + type + (results === 1 ? "" : "s") + ", you asked for #" + index);
       return;
     }
     msg.reply(printItem(res[type + "s"][index - 1]));
@@ -137,23 +137,13 @@ function getSpotifyJSON(path, cb) {
   });
 }
 
-// socialhapy is another bot with Spotify powers, be nice to it.
-const socialhapy = irc.person("socialhapy");
-const socialhapyPrefix = ".";
-
-function socialhapyNotInChan(msg) {
-  const chan = irc.channel(msg.params[0]);
-  const inChan = chan.people.has(socialhapy.id);
-  return !inChan;
-}
-
-
 function load(bot) {
-  // No need to check for socialhapy here, it uses "spotifind".
-  bot.match(/\bspotify(?:\s+(album|artist|track))?\s+((?:\D+)|(?:.+))(?:\s+([1-9]\d*))?$/i,
-    shared.forMe, search);
-  bot.match(/\b(?:open.spotify.com|spotify)[/:](album|artist|track)[/:](\S+)/i,
-    socialhapyNotInChan, lookup);
+  const searchRE =
+    /(?:(album|artist|track)\s+)?([^@#]+)(?:\s*#([1-9]\d*))?/;
+  const lookupRE =
+    /\b(?:open.spotify.com|spotify)[/:](album|artist|track)[/:](\S+)/;
+  bot.register("spotify", searchRE, search);
+  bot.match(lookupRE, lookup);
   return SUCCESS;
 }
 

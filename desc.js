@@ -14,7 +14,7 @@ const shared  = require("./shared");
 
 function say(msg, reply) {
   if(reply !== undefined) {
-    msg.reply("%s, %s", msg.from.nick, shared.unescape(reply));
+    msg.reply(shared.unescape(reply));
   }
 }
 

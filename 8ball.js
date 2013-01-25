@@ -29,7 +29,7 @@ const responses = [
 
 function getFortune(msg) {
   const index = Math.floor(responses.length * Math.random());
-  msg.reply("%s, %s.", msg.from.nick, responses[index]);
+  msg.reply("%s.", responses[index]);
   return irc.STATUS.STOP;
 }
 

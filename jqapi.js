@@ -13,7 +13,6 @@ function onAPI(msg, query, index, nick) {
   log.debug("in onAPI")
   const results = [];
   const num     = index ? index : 1;
-  const replyTo = nick || msg.from.nick;
   let hits = 0;
   for (let key in jQJSON) {
     let name  = jQJSON[key].name;
@@ -39,14 +38,14 @@ function onAPI(msg, query, index, nick) {
   }
   if (hits) {
     if (index && hits < index) {
-      msg.reply("%s, I only found %d match%s.", replyTo, hits, hits === 1 ? "" : "es");
+      msg.reply("I only found %d match%s.", hits, hits === 1 ? "" : "es");
     }
     else {
-      msg.reply("%s, %s", replyTo, results.pop());
+      msg.reply(results.pop());
     }
   }
   else {
-    msg.reply("%s, no matches.", replyTo);
+    msg.reply("No matches.");
   }
   return irc.STATUS.STOP;
 }

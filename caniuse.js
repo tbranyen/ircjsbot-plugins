@@ -27,7 +27,6 @@ function getFeats(f) {
 
 function onCaniuse(msg, query, index, nick) {
   const q = query.replace(/ /g,"+")
-    , replyTo = nick || msg.from.nick
     , url = {
         host: "api.html5please.com",
         path: "/" + encodeURIComponent(q) + ".json?noagent"
@@ -46,9 +45,9 @@ function onCaniuse(msg, query, index, nick) {
             , agents = getAgents(j.results,j.agents);
 
           if(agents.length) {
-            msg.reply("%s, You can use %s with: %s.%s", replyTo, features, agents, links.join());
+            msg.reply("You can use %s with: %s.%s", features, agents, links.join());
           } else {
-            msg.reply("%s, is not fully supported anywhere.", replyTo);
+            msg.reply("is not fully supported anywhere.");
           }
         }
       });

@@ -35,10 +35,10 @@ function onFinger(msg, nick) {
       return irc.STATUS.ERROR;
     }
     if (!res) {
-      msg.reply("%s, no idea who %s is.", msg.from.nick, nick);
+      msg.reply("No idea who %s is.", nick);
       return;
     }
-    msg.reply("%s, %s", msg.from.nick, prettyPrint(JSON.parse(res)));
+    msg.reply(prettyPrint(JSON.parse(res)));
   });
   return irc.STATUS.STOP;
 }

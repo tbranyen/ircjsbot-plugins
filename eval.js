@@ -18,7 +18,7 @@ const death = function( msg, code, error ) {
 }
 
 const speak = function( msg, person, out ) {
-  msg.reply( fmt( "%s, %s", person || msg.from.nick, out ) )
+  msg.reply( out )
 }
 
 const shell = function( exe, args, code, hb ) {

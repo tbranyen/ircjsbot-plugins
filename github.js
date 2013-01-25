@@ -11,7 +11,7 @@ function commit(msg, owner, project, sha) {
   const url = { hostname: host, path: "/repos/"+owner+"/"+project+"/git/commits/"+sha };
   shared.getJSON(url, function(data) {
     let ago = shared.timeAgo(new Date(data.author.date));
-    msg.reply("%s, %s (%s): %s", msg.from.nick, data.author.name, ago, data.message);
+    msg.reply("%s (%s): %s", data.author.name, ago, data.message);
   });
 }
 
@@ -20,7 +20,7 @@ function issue(msg, owner, project, num) {
   const url = { hostname: host, path: "/repos/"+owner+"/"+project+"/issues/"+num };
   shared.getJSON(url, function(data) {
     let ago = shared.timeAgo(new Date(data.created_at));
-    msg.reply("%s, issue #%d by %s (%s): %s", msg.from.nick, num, data.user.login, ago, data.title);
+    msg.reply("Issue #%d by %s (%s): %s", num, data.user.login, ago, data.title);
   });
 }
 
@@ -30,7 +30,7 @@ function pullRequest(msg, owner, project, num) {
   shared.getJSON(url, function(data) {
     let ago = shared.timeAgo(new Date(data.created_at));
     log.debug("pull data", data);
-    msg.reply("%s, pull request #%d by %s (%s): %s", msg.from.nick, num, data.user.login, ago, data.title);
+    msg.reply("Pull request #%d by %s (%s): %s", num, data.user.login, ago, data.title);
   });
 }
 

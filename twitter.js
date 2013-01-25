@@ -13,7 +13,7 @@ function outputStatus(msg, data) {
   if (data.text && data.user) {
     let name = shared.unescape(data.user.screen_name || data.user.name);
     let tweet = shared.unescape(data.text);
-    msg.reply("%s, @%s: %s", msg.from.nick, name, tweet);
+    msg.reply("@%s: %s", name, tweet);
   } else {
     log.debug("Tweet status didn't contain the necessary info:", data);
   }

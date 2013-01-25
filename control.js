@@ -15,27 +15,27 @@ function load(bot) {
   bot.match(/\bjoin\s+(\S+)\s*$/i, forMe, function(msg, chan) {
     const from = msg.from.nick;
     if (bot.channels.has(irc.id(chan))) {
-      msg.reply(from + ", I am already in " + chan + ".");
+      msg.reply("I am already in " + chan + ".");
       return STOP;
     }
     // Reply when joined.
     bot.join(chan, function(chan, err) {
       if (err) {
-        msg.reply(from + ", there was an error when I tried to join " + chan + ": " + err.message);
+        msg.reply("There was an error when I tried to join " + chan + ": " + err.message);
         return;
       }
-      msg.reply(from + ", I am now in " + chan + ".");
+      msg.reply("I am now in " + chan + ".");
     });
   });
 
   // Leave a channel.
   bot.match(/\b(?:part|leave)\s+(\S+)\s*$/i, forMe, function(msg, chan) {
     if (!bot.channels.has(irc.id(chan))) {
-      msg.reply("%s, I am not in %s.", msg.from.nick, chan);
+      msg.reply("I am not in %s.", chan);
       return STOP;
     }
     bot.part(chan);
-    msg.reply("%s, I have now left %s.", msg.from.nick, chan);
+    msg.reply("I have now left %s.", chan);
     return STOP;
   });
 
@@ -46,7 +46,7 @@ function load(bot) {
       chanObj.say(text);
     }
     else {
-      msg.reply("%s, I am not in %s.", msg.from.nick, chan);
+      msg.reply("I am not in %s.", chan);
     }
     return STOP;
   });

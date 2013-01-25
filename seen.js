@@ -16,12 +16,12 @@ function seen(bot, msg, name, num) {
   // Bonus feature: ask for log entry at specific index
   const ix  = num ? num : 0;
   if (msg.from.nick === name) {
-    msg.reply("%s, I see you right now, here in %s.", msg.from.nick,
+    msg.reply("I see you right now, here in %s.",
       bot.user.nick === msg.params[0] ? "our cozy private chat" : msg.params[0]);
     return irc.STATUS.STOP;
   }
   else if (bot.user.nick === name) {
-    msg.reply("%s, I am here with you in %s.", msg.from.nick,
+    msg.reply("I am here with you in %s.",
       bot.user.nick === msg.params[0] ? "our sexy private chat" : msg.params[0]);
     return irc.STATUS.STOP;
   }
@@ -29,12 +29,12 @@ function seen(bot, msg, name, num) {
   redisClient.lindex(key, ix, function(err, res) {
     log.debug("Replying to `seen` inquiry");
     if (err) {
-      msg.reply("%s, I went to see, but there was an error: %s", msg.from.nick, err);
+      msg.reply("I went to see, but there was an error: %s", err);
       log.debug("`seen` failed: %s", err);
       return;
     }
     if (!res) {
-      msg.reply("%s, I have never seen %s.", msg.from.nick, name);
+      msg.reply("I have never seen %s.", name);
       log.debug("Did not find any entries for %s", name);
       return;
     }
@@ -43,10 +43,10 @@ function seen(bot, msg, name, num) {
     const msg_  = irc.parser.parse(new Buffer(parts[2] + "\r\n"));
     const ago   = shared.timeAgo(date);
     if (!msg_) {
-      msg.reply("%s, WTF, could not parse this: %s", msg.from.nick, parts[2]);
+      msg.reply("WTF, could not parse this: %s", parts[2]);
       return;
     }
-    msg.reply(msg.from.nick + ", I saw " + name + " " + ago + ", " + describe(bot, msg_, msg));
+    msg.reply("I saw " + name + " " + ago + ", " + describe(bot, msg_, msg));
   });
 
   return irc.STATUS.STOP;

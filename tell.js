@@ -63,8 +63,8 @@ function notify(msg, _) {
       return;
     }
     const one = new_ === 1;
-    msg.reply("%s, you have %s%s, use `read when you wish to read %s.",
-      nick, one ? "one new message" : new_ + " new messages",
+    msg.reply("You have %s%s, use `read when you wish to read %s.",
+      one ? "1 new message" : new_ + " new messages",
       notes.length === new_ ? "" : " (and " + (notes.length - new_) + " unread)",
       one ? "it" : "them");
   });
@@ -73,22 +73,20 @@ function notify(msg, _) {
 function read(bot, msg) {
   const nick = msg.from.nick;
   const key  = rds.key(msg.from, KEY);
-  const pm   = msg.params[0] === bot.user.nick;
   redisClient.lrange(key, 0, -1, function(err, notes) {
     if (err) {
       log.error("Redis error in tell.js: %s", err);
       return irc.STATUS.STOP;
     }
     if (!notes || 0 === notes.length) {
-      msg.reply("%sNo unread messages.", pm ? "" : nick + ", ");
+      msg.reply("No unread messages.");
       return irc.STATUS.STOP;
     }
     let l = notes.length;
     let note = null;
     while (l--) {
       note = Note.fromString(notes[l]);
-      msg.reply("%sfrom %s, %s: %s", pm ? "" : nick + ", ",
-        note.from, shared.timeAgo(note.date), note.note);
+      msg.reply("From %s, %s: %s", note.from, shared.timeAgo(note.date), note.note);
     }
     redisClient.del(key, function(err, res) { if (err) { log.error(err); }});
   });
@@ -98,17 +96,17 @@ function read(bot, msg) {
 function add(bot, msg, name, note) {
   const from  = msg.from.nick;
   const key   = rds.key(name, KEY);
-  if (irc.id(name) == msg.from.id) {
-    msg.reply("%s, %s", from, note);
+  if (irc.id(name) === msg.from.id) {
+    msg.reply(note);
     return irc.STATUS.STOP;
   }
-  if (irc.id(name) == bot.user.id) {
+  if (irc.id(name) === bot.user.id) {
     msg.reply("\x01ACTION explodes\x01");
     return irc.STATUS.STOP;
   }
   const rnote = new Note(from, key, note);
   redisClient.lpush(key, rnote.toString());
-  msg.reply("%s, I’ll tell %s about that.", from, name);
+  msg.reply("I’ll tell %s about that.", name);
   log.debug("Added note from %s to %s: %s", from, name, note);
   return irc.STATUS.STOP;
 }

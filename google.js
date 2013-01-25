@@ -29,10 +29,10 @@ function speak(msg, query, index, person) {
   search(query, function(res) {
     let hit = res[idx];
     if (!hit) {
-      msg.reply(msg.from.nick + ", sorry, no results for ‟" + query + "”.");
+      msg.reply("Sorry, no results for ‟" + query + "”.");
       return;
     }
-    msg.reply(person || msg.from.nick + ", " + unescape(hit.titleNoFormatting) + " → " + hit.unescapedUrl);
+    msg.reply(unescape(hit.titleNoFormatting) + " → " + hit.unescapedUrl);
   });
 
   return irc.STATUS.STOP;

@@ -12,7 +12,6 @@ const irc   = require("irc-js");
 const log = irc.logger.get("ircjs-plugin-shared");
 
 // Redis stuff
-const TOKEN = "ff774f90da063a0dfa783172f16af4e3";
 const HOST  = "localhost";
 const PORT  = 6379;
 
@@ -36,7 +35,6 @@ function getKey(object, prefix) {
 const redisStuff =
   { EVENT:  EVENT
   , STATUS: STATUS
-  , TOKEN:  TOKEN
   , HOST:   HOST
   , PORT:   PORT
   , key:    getKey
@@ -53,7 +51,6 @@ Object.defineProperty(redisStuff, "client", {
   get: function() {
     if (!redisClient) {
       redisClient = redis.createClient(PORT, HOST);
-      redisClient.auth(TOKEN);
       redisClient.on(redisStuff.EVENT.ERROR, onRedisError);
     }
     return redisClient;

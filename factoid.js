@@ -24,7 +24,7 @@ function speak(msg, trigger, person) {
     if (!res) {
       return
     }
-    msg.reply("%s, %s", person || msg.from.nick, res);
+    msg.reply(res);
     return irc.STATUS.STOP;
   });
 }
@@ -37,7 +37,7 @@ function learn(msg, key, value) {
       return;
     }
     log.debug("Learned a new factoid: %s", key);
-    msg.reply("%s, memorised “%s”.", msg.from.nick, key);
+    msg.reply("memorised “%s”.", key);
   });
 }
 
@@ -50,10 +50,10 @@ function forget(msg, key) {
     }
     // Nothing was deleted
     if (res === 0) {
-      msg.reply("%s, I can’t forget that which I do not know.", msg.from.nick);
+      msg.reply("I can’t forget that which I do not know.");
       return;
     }
-    const replyText = fmt("%s, I have forgotten “%s”%s", msg.from.nick, key,
+    const replyText = fmt("I have forgotten “%s”%s", key,
       Math.random() > 0.5 ? ". My mind is going, I can feel it." : ".");
     msg.reply(replyText);
     log.debug("Happily forgot factoid: %s", key);

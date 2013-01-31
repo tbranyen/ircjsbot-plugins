@@ -97,8 +97,6 @@ function timeAgo(t) {
     rem -= num * times[idx];
     out.push(num + labels[idx]);
   }
-  out.splice(2);
-  out.push("ago");
   return out.join(" ");
 }
 

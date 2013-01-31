@@ -9,13 +9,13 @@ const irc     = require("irc-js");
 const shared  = require("./shared");
 
 const responses = [
-  "%s since last callbaccident.",
+  "%s since last callbac-cident.",
   "Sober for %s.",
   "I became self-aware %s ago."
 ];
 
 function uptime(msg) {
-  const ago = shared.timeAgo(Date.now()-process.uptime()*1000);
+  const ago = shared.timeAgo(Date.now() - process.uptime() * 1000);
   const index = Math.floor(responses.length * Math.random()); 
   msg.reply(responses[index], ago);
 }

@@ -39,7 +39,7 @@ function down(msg,query) {
 }
 
 function load(bot) {
-  bot.match(/^down\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,down);
+  bot.register("down", /(.+)/, down);
   return irc.STATUS.SUCCESS;
 }
 

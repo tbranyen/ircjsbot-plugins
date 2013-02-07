@@ -11,12 +11,12 @@ const shared  = require("./shared");
 const unescape = shared.unescape;
 
 const sites = [
-    [ "mdn",     "developer.mozilla.org" ]
-  , [ "wiki",    "en.wikipedia.org" ]
-  , [ "imdb",    "www.imdb.com" ]
-  , [ "reddit",  "www.reddit.com" ]
-  , [ "hn",      "news.ycombinator.com" ]
-  , [ "youtube", "www.youtube.com" ]
+    [ "mdn",     "developer.mozilla.org " ]
+  , [ "wiki",    "en.wikipedia.org " ]
+  , [ "imdb",    "www.imdb.com " ]
+  , [ "reddit",  "www.reddit.com " ]
+  , [ "hn",      "news.ycombinator.com " ]
+  , [ "youtube", "www.youtube.com " ]
 ]
 
 function search(query, cb) {

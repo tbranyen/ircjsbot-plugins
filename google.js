@@ -10,6 +10,15 @@ const shared  = require("./shared");
 
 const unescape = shared.unescape;
 
+const sites = [
+    [ 'mdn',     'developer.mozilla.org ' ]
+  , [ 'wiki',    'en.wikipedia.org ' ]
+  , [ 'imdb',    'www.imdb.com ' ]
+  , [ 'reddit',  'www.reddit.com ' ]
+  , [ 'hn',      'http://news.ycombinator.com/ ' ]
+  , [ 'youtube', 'http://www.youtube.com/' ]
+]
+
 function search(query, cb) {
   const url = {
     host: "ajax.googleapis.com",
@@ -38,25 +47,20 @@ function speak(msg, query, index, person) {
   return irc.STATUS.STOP;
 }
 
-function mdn(msg, query, index, person) {
-  const mquery = 'site:developer.mozilla.org ' + query;
-  speak(msg, mquery, index, person);
-}
-
-function wiki(msg, query, index, person) {
-  const wquery = 'site:en.wikipedia.org ' + query;
-  speak(msg, wquery, index, person);
+function siteSearch(site, msg, query, index, person) {
+  speak(msg, site + query, index, person);
 }
 
 // Implement Plugin interface.
 
 function load(bot) {
-  bot.match(/\bg(?:oogle)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
-    shared.forMe, speak);
-  bot.match(/\bm(?:dn)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
-    shared.forMe, mdn);
-  bot.match(/\bwiki(?:pedia)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
-    shared.forMe, wiki);
+  bot.register("google", /(.+)/, speak);
+  bot.register("g", /(.+)/, speak);
+
+  sites.forEach(function(s) {
+    bot.register(s[0], /(.+)/, siteSearch.bind(null, s[1]));
+  });
+  
   return irc.STATUS.SUCCESS;
 }
 

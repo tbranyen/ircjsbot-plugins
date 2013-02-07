@@ -50,6 +50,9 @@ function onCaniuse(msg, query, index, nick) {
             msg.reply("is not fully supported anywhere.");
           }
         }
+        else {
+          msg.reply("Sorry, I can't find anything on %s",q);
+        }
       });
   });
 

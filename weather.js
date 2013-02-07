@@ -60,7 +60,7 @@ function onWeather(msg, query, index, nick) {
         }
         else if (obs = j.current_observation) {
           // Feels like
-          const feelsLike = obs.temp_f != obs.feelslike_f ?
+          const feelsLike = Math.round(obs.temp_c) != Math.round(obs.feelslike_c) ?
             fmt('Feels like %s. ', format_temp(obs.feelslike_f, obs.feelslike_c)) :
             '';
 

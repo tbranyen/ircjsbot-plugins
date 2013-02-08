@@ -21,9 +21,9 @@ const icons   = {
   'lightning': '⚡',
   'thunder':   '⚡',
   'haze':      '≈'
-}
+};
 
-var crew
+var crew;
 
 function onWeather(msg, query, index, nick) {
   if (!query) {
@@ -84,7 +84,7 @@ function onWeather(msg, query, index, nick) {
 }
 
 function format_temp (f, c) {
-  return fmt("\x02%s°F\x02/\x02%s°C\x02", f, c)
+  return fmt("\x02%s°F\x02/\x02%s°C\x02", f, c);
 }
 
 function load(bot) {
@@ -93,9 +93,8 @@ function load(bot) {
     crew = obj;
   });
 
-  bot.match(/^:[!,./\?@`]w(?:eather)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i, onWeather);
-  bot.match(/^:[!,./\?@`]w(?:eather)?\s*$/, onWeather);
-
+  bot.register("w", /(.+)?/gi, onWeather);
+  bot.register("weather", /(.+)?/gi, onWeather);
   return irc.STATUS.SUCCESS;
 }
 

@@ -97,7 +97,7 @@ function timeAgo(t) {
     rem -= num * times[idx];
     out.push(num + labels[idx]);
   }
-  return out.join(" ");
+  return out;
 }
 
 // Stuff for detecting bot-t.

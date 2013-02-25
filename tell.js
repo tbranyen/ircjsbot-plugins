@@ -86,7 +86,8 @@ function read(bot, msg) {
     let note = null;
     while (l--) {
       note = Note.fromString(notes[l]);
-      msg.reply("From %s, %s: %s", note.from, shared.timeAgo(note.date), note.note);
+      msg.reply("From %s, %s ago: %s", note.from,
+        shared.timeAgo(note.date).slice(0, 2).join(" "), note.note);
     }
     redisClient.del(key, function(err, res) { if (err) { log.error(err); }});
   });

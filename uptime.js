@@ -17,7 +17,7 @@ const responses = [
 function uptime(msg) {
   const ago = shared.timeAgo(Date.now() - process.uptime() * 1000);
   const index = Math.floor(responses.length * Math.random()); 
-  msg.reply(responses[index], ago);
+  msg.reply(responses[index], ago.join(" "));
 }
 
 function load(bot) {

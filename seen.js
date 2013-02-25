@@ -41,12 +41,12 @@ function seen(bot, msg, name, num) {
     const parts = res.match(/^(\d+)(.+)/);
     const date  = new Date(Number(parts[1]));
     const msg_  = irc.parser.parse(new Buffer(parts[2] + "\r\n"));
-    const ago   = shared.timeAgo(date);
+    const ago   = shared.timeAgo(date).slice(0, 2).join(" ");
     if (!msg_) {
       msg.reply("WTF, could not parse this: %s", parts[2]);
       return;
     }
-    msg.reply("I saw " + name + " " + ago + ", " + describe(bot, msg_, msg));
+    msg.reply("I saw " + name + " " + ago + " ago, " + describe(bot, msg_, msg));
   });
 
   return irc.STATUS.STOP;

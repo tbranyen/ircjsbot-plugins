@@ -23,13 +23,17 @@ function onConvert(msg, query, index, nick) {
     res
       .on(irc.NODE.SOCKET.EVENT.DATA, data.push.bind(data))
       .on(irc.NODE.SOCKET.EVENT.END, function() {
-        const j = JSON.parse(
-          data
-            .join("")
-            .replace(/(['"])?([a-zA-Z0-9]+)(['"])?:/g, '"$2":'));
+        let j = null;
 
-        if (j.error) {
-          msg.reply("Error converting...");
+        try {
+          j = JSON.parse(
+            data
+              .join("")
+              .replace(/(['"])?([a-zA-Z0-9]+)(['"])?:/g, '"$2":'));
+        } catch (e) {}
+
+        if (!j || j.error) {
+          msg.reply("Error converting…");
         }
         else {
           msg.reply(j.lhs + " \x02=\x02 " + j.rhs);

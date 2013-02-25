@@ -32,10 +32,6 @@ function fetchLatest(msg, query, index, person) {
 }
 
 function load(bot) {
-  /* bot.match(/twitter\.com\/(?:#!\/)?(.+?)\/status(?:es)?\/(\d+)/i, status);
-  bot.match(/\bt(?:weet)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
-    shared.forMe, fetchLatest); */
-  
   bot.match(/twitter\.com\/(?:#!\/)?(.+?)\/status(?:es)?\/(\d+)/i, status);
   bot.register("tweet", /(.+)/, fetchLatest);
 

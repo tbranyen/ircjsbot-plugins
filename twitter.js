@@ -27,14 +27,18 @@ function status(msg, type, statusId) {
 
 function fetchLatest(msg, query, index, person) {
   log.debug("Fetching latest from: %s", query);
-  const url = { hostname: host, path: "/1/statuses/user_timeline.json?include_rts=true&exclude_replies=true&count=1&screen_name=" + query };
+  const url = { hostname: host, path: "/1/statuses/user_timeline.json?count=1&screen_name=" + query };
   shared.getJSON(url, outputStatus.bind(null, msg));
 }
 
 function load(bot) {
-  bot.match(/twitter\.com\/(?:#!\/)?(.+?)\/status(?:es)?\/(\d+)/i, status);
+  /* bot.match(/twitter\.com\/(?:#!\/)?(.+?)\/status(?:es)?\/(\d+)/i, status);
   bot.match(/\bt(?:weet)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
-    shared.forMe, fetchLatest);
+    shared.forMe, fetchLatest); */
+  
+  bot.match(/twitter\.com\/(?:#!\/)?(.+?)\/status(?:es)?\/(\d+)/i, status);
+  bot.register("tweet", /(.+)/, fetchLatest);
+
   return irc.STATUS.SUCCESS;
 }
 

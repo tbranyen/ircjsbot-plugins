@@ -34,6 +34,7 @@ function fetchLatest(msg, query, index, person) {
 function load(bot) {
   bot.match(/twitter\.com\/(?:#!\/)?(.+?)\/status(?:es)?\/(\d+)/i, status);
   bot.register("tweet", /(.+)/, fetchLatest);
+  bot.register("t", /(.+)/, fetchLatest);
 
   return irc.STATUS.SUCCESS;
 }

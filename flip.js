@@ -1,5 +1,5 @@
 /**
- * @module kickFlip
+ * @module flip
  */
 
 "use strict";
@@ -57,7 +57,7 @@ const chars = {
     '\\' : '/'
 }
 
-function kickFlip(msg, query) {
+function flip(msg, query) {
   msg.reply('(╯°□°）╯︵' + query.toLowerCase().split('').map(function(c) {
     return chars[c] ? chars[c] : c;
   }).reverse().join(''));
@@ -66,8 +66,7 @@ function kickFlip(msg, query) {
 // Implement Plugin interface.
 
 function load(bot) {
-  bot.match(/\bk(?:ickFlip)?\s+([^#@]+)(?:\s*#(\d+))?(?:\s*@\s*(\S+))?\s*$/i,
-    shared.forMe, kickFlip);
+  bot.register("flip", /(.+)/, flip);
   return irc.STATUS.SUCCESS;
 }
 
@@ -75,6 +74,6 @@ function unload() {
   return irc.STATUS.SUCCESS;
 }
 
-exports.name    = "kickFlip";
+exports.name    = "flip";
 exports.load    = load;
 exports.unload  = unload;

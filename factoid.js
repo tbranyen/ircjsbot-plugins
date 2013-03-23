@@ -75,5 +75,8 @@ function unload() {
 }
 
 exports.name    = "Factoid";
+exports.help    = "Set factoids with \"!factoids is 'factoids are great!'\". "
+                 +"Forget factoids with \"!forget factoids\". "
+                 +"Retrieve with \"!factoids\" or \"@factoids\"";                 
 exports.load    = load;
 exports.unload  = unload;

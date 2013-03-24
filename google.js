@@ -69,5 +69,6 @@ function unload() {
 }
 
 exports.name    = "Google";
+exports.help    = "Get the first result from Google with \"google [term]\" or \"g [term]\".";
 exports.load    = load;
 exports.unload  = unload;

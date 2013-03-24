@@ -118,5 +118,7 @@ function unload() {
 }
 
 exports.name    = "Seen";
+exports.help    = "Ask the bot when it last saw someone with \"seen [nick]\". "
+                + "Optionally you can ask for a log entry at a specific index with \"seen [nick] [idx]\".";
 exports.load    = load;
 exports.unload  = unload;

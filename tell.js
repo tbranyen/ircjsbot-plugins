@@ -125,5 +125,7 @@ function unload() {
 }
 
 exports.name    = "Tell";
+exports.help    = "Leave a message for someone with \"!tell [nick] [message]\". "
+                + "Read a message \"!read\". ";
 exports.load    = load;
 exports.unload  = unload;

@@ -14,12 +14,12 @@ const redisClient = shared.redis.client;
 
 const blacklist = new Set();
 
-blacklist.add('#jquery');
-blacklist.add('#xbmc');
-blacklist.add('#openelec');
+blacklist.add("#jquery");
+blacklist.add("#xbmc");
+blacklist.add("#openelec");
 
 function onWat(msg) {
-  if ( shared.stfu( msg, blacklist ) ) return;
+  if ( shared.stfu( blacklist, msg ) ) return;
   redisClient.srandmember(sKey, function(err, res) {
     if (err) {
       log.error("onWat error: %s", err);

@@ -11,9 +11,9 @@ const log = irc.logger.get("ircjs-plugin-flair");
 
 const blacklist = new Set();
 
-blacklist.add('#jquery');
-blacklist.add('#xbmc');
-blacklist.add('#openelec');
+blacklist.add("#jquery");
+blacklist.add("#xbmc");
+blacklist.add("#openelec");
 
 const FLAIR =
   [ [ /\balligator\b/i,           "---,==,'<" ]

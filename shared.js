@@ -117,9 +117,8 @@ function forMe(msg) {
 
 // check if plugin is blacklisted
 function stfu(msg, channels) {
-  var chan = msg.params[0];
   return channels.some(function(el) {
-    return el == chan;
+    return el === msg.params[0];
   });
 }
 

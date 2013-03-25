@@ -12,8 +12,12 @@ const sKey    = "WAT";
 
 const redisClient = shared.redis.client;
 
+const blacklist = [
+  '#jquery', '#xbmc'
+]
+
 function onWat(msg) {
-  if (msg.params[0] === "#jquery") return;
+  if ( shared.stfu( msg, blacklist ) ) return;
   redisClient.srandmember(sKey, function(err, res) {
     if (err) {
       log.error("onWat error: %s", err);

@@ -1,7 +1,17 @@
 /**
  * @module flair
  */
+ 
+"use strict";
+
 const irc = require( "irc-js" )
+const shared  = require("./shared");
+
+const log = irc.logger.get("ircjs-plugin-flair");
+
+const blacklist = [
+  '#jquery', '#xbmc', '#irc-js'
+]
 
 const FLAIR =
   [ [ /\balligator\b/i,           "---,==,'<" ]
@@ -37,6 +47,7 @@ const FLAIR =
   ]
 
 const speak = function( reply, msg ) {
+  if ( shared.stfu( msg, blacklist ) ) return;
   if ( reply === Object( reply ) ) {
     reply.forEach( function( reply ) {
       msg.reply( reply )

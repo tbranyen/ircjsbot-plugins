@@ -115,6 +115,14 @@ function forMe(msg) {
   return !forBotT(msg) && msg.forMe;
 }
 
+// check if plugin is blacklisted
+function stfu(msg, channels) {
+  var chan = msg.params[0];
+  return channels.some(function(el) {
+    return el == chan;
+  });
+}
+
 function replaceEntity(input) {
   if (input.charAt(1) === '#') {
     return String.fromCharCode(parseInt(input.slice(2), 10));
@@ -402,6 +410,7 @@ ENTITIES.set("&rsaquo;", "›");
 ENTITIES.set("&euro;", "€");
 
 exports.forMe       = forMe;
+exports.stfu        = stfu;
 exports.getJSON     = getJSON;
 exports.redis       = redisStuff;
 exports.timeAgo     = timeAgo;

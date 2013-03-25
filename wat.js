@@ -12,9 +12,11 @@ const sKey    = "WAT";
 
 const redisClient = shared.redis.client;
 
-const blacklist = [
-  '#jquery', '#xbmc'
-]
+const blacklist = new Set();
+
+blacklist.add('#jquery');
+blacklist.add('#xbmc');
+blacklist.add('#openelec');
 
 function onWat(msg) {
   if ( shared.stfu( msg, blacklist ) ) return;

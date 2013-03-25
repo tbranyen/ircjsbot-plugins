@@ -116,10 +116,8 @@ function forMe(msg) {
 }
 
 // check if plugin is blacklisted
-function stfu(msg, channels) {
-  return channels.some(function(el) {
-    return el === msg.params[0];
-  });
+function stfu(channels, msg) {
+  return channels.has(msg.params[0]);
 }
 
 function replaceEntity(input) {

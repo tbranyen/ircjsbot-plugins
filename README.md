@@ -36,6 +36,6 @@ Register a command with `bot.register();` which is typically used with the load 
 ex:
 
 ```javascript
-// google "anything", then run the speak function
+// google "any character", then run the speak function
 bot.register("google", /(.+)/, speak);
 ```

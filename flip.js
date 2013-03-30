@@ -74,7 +74,7 @@ function unload() {
   return irc.STATUS.SUCCESS;
 }
 
-exports.name    = "flip";
+exports.name    = "Flip";
 exports.help    = "Flip things with \"!flip [whatever]\".";
 exports.load    = load;
 exports.unload  = unload;

@@ -49,8 +49,15 @@ function onWeather(msg, query, index, nick) {
     res
       .on(irc.NODE.SOCKET.EVENT.DATA, data.push.bind(data))
       .on(irc.NODE.SOCKET.EVENT.END, function() {
-        const j = JSON.parse(data.join(''));
+        var j;
         var obs;
+
+        try {
+          j = JSON.parse(data.join(''));
+        } catch (e) {
+          msg.reply("Could not parse JSON reply, sorry");
+          return;
+        }
 
         if (j.response.error) {
           msg.reply(j.response.error.description);

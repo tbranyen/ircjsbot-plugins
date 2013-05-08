@@ -23,6 +23,7 @@ function status(msg, type, statusId) {
   log.debug("Fetching tweet status: %s", statusId);
   const url = { hostname: host, path: "/1/statuses/show.json?id=" + statusId };
   shared.getJSON(url, outputStatus.bind(null, msg));
+  return irc.STATUS.STOP;
 }
 
 function fetchLatest(msg, query, index, person) {

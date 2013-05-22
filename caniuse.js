@@ -70,5 +70,6 @@ function unload() {
 }
 
 exports.name    = "caniuse";
+exports.help    = "Fetch support info from caniuse.com API with `!caniuse [feature1 feature2]`.";
 exports.load    = load;
 exports.unload  = unload;

@@ -61,5 +61,6 @@ function unload() {
 }
 
 exports.name    = "jQuery API";
+exports.help    = "Fetch method info from jQuery API with `!api [term]`.";
 exports.load    = load;
 exports.unload  = unload;

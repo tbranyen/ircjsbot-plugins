@@ -75,6 +75,6 @@ function unload() {
 }
 
 exports.name    = "Flip";
-exports.help    = "Flip things with \"!flip [whatever]\".";
+exports.help    = "Flip things with `!flip [whatever]`.";
 exports.load    = load;
 exports.unload  = unload;

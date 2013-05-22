@@ -47,5 +47,6 @@ function unload() {
 }
 
 exports.name    = "8ball";
+exports.help    = "Ask a yes/no type question directed at the bot, get a response!";
 exports.load    = load;
 exports.unload  = unload;

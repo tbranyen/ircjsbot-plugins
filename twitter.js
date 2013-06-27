@@ -4,7 +4,7 @@ const irc     = require("irc-js");
 const shared  = require("./shared");
 const log     = irc.logger.get("ircjs-plugin-twitter");
 
-const host    = "api.twitter.com";
+const host    = "noauth.jit.su";
 
 function outputStatus(msg, data) {
   if (data.length) {

@@ -24,7 +24,7 @@ function getDesc(msg, query) {
       url : msg.params[1].replace(/^:/,'')
     }, function (error, response, body) {
 
-      if (!error && response.statusCode == 200) {
+      if (!error && response.statusCode == 200 && responsonse.headers['content-type'].indexOf('html') !== -1) {
 
         const $     = cheerio.load(body);
         const desc  = $( 'meta[name="description"]' ).attr( 'content' ) || $( 'meta[property="og:description"]' );

@@ -48,7 +48,13 @@ var JSONRPCClient = function(port, host) {
         data.push(chunk);
       });
       res.on("end", function() {
-        var decoded = JSON.parse(data.join(""));
+        var decoded;
+        try {
+          decoded = JSON.parse(data.join(""));
+        } catch (e) {
+          callback(e, null);
+          return;
+        }
         if (decoded.hasOwnProperty("result")) {
           callback(null, decoded.result);
         }

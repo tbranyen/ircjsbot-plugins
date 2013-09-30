@@ -5,11 +5,10 @@
 "use strict";
 
 const fmt     = require("util").format;
-const http    = require("http");
+const https    = require("https");
 const irc     = require("irc-js");
 const shared  = require("./shared");
 const log     = irc.logger.get("ircjs-plugin-domains");
-const request = require('request'); 
 
 
 function onDomain(msg, query, index, nick) {
@@ -21,12 +20,11 @@ function onDomain(msg, query, index, nick) {
         path: "/api/json/search?q="+encodeURIComponent(query)
       };
 
-  http.get(url, function(res) {
+  https.get(url, function(res) {
     const data = [];
     res
       .on(irc.NODE.SOCKET.EVENT.DATA, data.push.bind(data))
       .on(irc.NODE.SOCKET.EVENT.END, function() {
-        
         const j = JSON.parse(data.join(""));
 
         if(j.error || !j.results.length){

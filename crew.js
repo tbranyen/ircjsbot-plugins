@@ -43,7 +43,7 @@ function onFinger(msg, nick) {
   return irc.STATUS.STOP;
 }
 
-function load(bot) {
+function loadJSON(msg) {
   shared.getJSON(crewURL, function(data) {
     const headCount = data.length;
     log.debug("Got crew data:", data);
@@ -54,9 +54,17 @@ function load(bot) {
       redisData[irc.id(crewMember.irc)] = JSON.stringify(crewMember);
     });
     redisClient.hmset(crewKey, redisData);
-  });
 
+    if (msg) {
+      msg.reply("Reloaded the ol' ot-crew");
+    }
+  });
+}
+
+function load(bot) {
+  loadJSON();
   bot.match(/^:(?:\S+)?\W?\bf(?:inger)?\s+(\S+)/i, shared.forMe, onFinger);
+  bot.match(/^:[!,./\?@`]reload crew/i, loadJSON);
   return irc.STATUS.SUCCESS;
 }
 

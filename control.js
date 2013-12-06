@@ -19,7 +19,7 @@ function load(bot) {
       return STOP;
     }
     // Reply when joined.
-    bot.join(chan, function(chan, err) {
+    bot.join(chan, function(err, chan) {
       if (err) {
         msg.reply("There was an error when I tried to join " + chan + ": " + err.message);
         return;

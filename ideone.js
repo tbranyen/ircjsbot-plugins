@@ -107,7 +107,9 @@ function load(bot) {
     }
     lang = languages[lang];
     ideone.call("createSubmission", [USER, PASS, code, lang, "", true, false], function(error, result){
-    	if (result["error"] == "OK"){
+      if (!result) {
+        msg.reply("No result.");
+      } else if (result["error"] == "OK"){
     		wait(result["link"], function(res) {
           if (!res["output"]) {
             msg.reply("No output.");

@@ -134,7 +134,7 @@ function unescape(input) {
 
 // A couple of plugins do the same JSON-fetching over HTTPS.
 function getJSON(url, cb) {
-  https.get(url, function(res) {
+  const req = https.get(url, function(res) {
     const data  = [];
     res.on(irc.NODE.SOCKET.EVENT.DATA, function(chunk) {
       data.push(chunk);
@@ -148,6 +148,9 @@ function getJSON(url, cb) {
         log.error("Broken JSON from:", url, " -- ", data.join(""));
       }
     });
+  });
+  req.on("error", function(e) {
+    log.error("Error:", e);
   });
 }
 

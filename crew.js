@@ -10,8 +10,8 @@ const shared  = require("./shared");
 const log     = irc.logger.get("ircjs-plugin-crew");
 const crewKey = "CREW";
 const crewURL = {
-  host: "raw.github.com",
-  path: "/ot-crew/ot-crew.com/master/public/crew.json"
+  host: "ot-crew.com",
+  path: "/crew.json"
 };
 
 const redisClient = shared.redis.client;

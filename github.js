@@ -11,7 +11,6 @@ function commit(msg, owner, project, sha) {
   const url = { hostname: host, path: "/repos/"+owner+"/"+project+"/git/commits/"+sha };
   shared.getJSON(url, function(err, data) {
     if (err) {
-      msg.reply("Error parsing JSON");
       return;
     }
     let ago = shared.timeAgo(new Date(data.author.date)).slice(0, 2).join(" ");
@@ -25,7 +24,6 @@ function issue(msg, owner, project, num) {
   const url = { hostname: host, path: "/repos/"+owner+"/"+project+"/issues/"+num };
   shared.getJSON(url, function(err, data) {
     if (err) {
-      msg.reply("Error parsing JSON");
       return;
     }
     let ago = shared.timeAgo(new Date(data.created_at)).slice(0, 2).join(" ");
@@ -39,7 +37,6 @@ function pullRequest(msg, owner, project, num) {
   const url = { hostname: host, path: "/repos/"+owner+"/"+project+"/pulls/"+num };
   shared.getJSON(url, function(err, data) {
     if (err) {
-      msg.reply("Error parsing JSON");
       return;
     }
     let ago = shared.timeAgo(new Date(data.created_at)).slice(0, 2).join(" ");

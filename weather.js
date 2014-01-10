@@ -23,7 +23,7 @@ const icons   = {
   'haze':      '≈'
 };
 
-var crew;
+const crew = [];
 
 function onWeather(msg, query, index, nick) {
   if (!query) {
@@ -96,8 +96,10 @@ function format_temp (f, c) {
 
 function load(bot) {
   // Load the crew
-  shared.getJSON('https://raw.github.com/ot-crew/ot-crew.com/master/public/crew.json', function (obj) {
-    crew = obj;
+  shared.getJSON('https://raw.github.com/ot-crew/ot-crew.com/master/public/crew.json', function(err, obj) {
+    if (!err) {
+      crew.push.apply(crew, obj);
+    }
   });
 
   bot.register("w", /(.+)?/gi, onWeather);

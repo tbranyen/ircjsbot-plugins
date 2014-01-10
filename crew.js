@@ -44,7 +44,13 @@ function onFinger(msg, nick) {
 }
 
 function loadJSON(msg) {
-  shared.getJSON(crewURL, function(data) {
+  shared.getJSON(crewURL, function(err, data) {
+    if (err) {
+      if (msg) {
+        msg.reply("Errors tho: " + err.message)
+      }
+      return;
+    }
     const headCount = data.length;
     log.debug("Got crew data:", data);
     // Now convert from array of objects to object keyed on nick/id

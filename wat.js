@@ -33,7 +33,11 @@ function onWat(msg) {
 }
 
 function load(bot) {
-  shared.getJSON(watURL, function(data) {
+  shared.getJSON(watURL, function(err, data) {
+    if (err) {
+      log.debug("Failed to get wat JSON");
+      return;
+    }
     log.debug("Got wat JSON: %s thingies", data.length);
     redisClient.sadd(sKey, data);
   });

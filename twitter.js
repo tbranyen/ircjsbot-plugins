@@ -6,7 +6,10 @@ const log     = irc.logger.get("ircjs-plugin-twitter");
 
 const host    = "noauth.jit.su";
 
-function outputStatus(msg, data) {
+function outputStatus(msg, err, data) {
+  if (err) {
+    return;
+  }
   if (data.length) {
     data = data[0];
   }

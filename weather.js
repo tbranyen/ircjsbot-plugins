@@ -96,10 +96,22 @@ function format_temp (f, c) {
 
 function load(bot) {
   // Load the crew
-  shared.getJSON('https://raw.github.com/ot-crew/ot-crew.com/master/public/crew.json', function(err, obj) {
-    if (!err) {
-      crew.push.apply(crew, obj);
-    }
+  const req = http.get("http://ot-crew.com/crew.json", function(res) {
+    const data  = [];
+    res.on("data", function(chunk) {
+      data.push(chunk);
+    });
+    res.on("end", function() {
+      try {
+        let obj = JSON.parse(data.join(""));
+        crew.push.apply(crew, obj);
+      } catch (e) {
+        log.error("Failed to parse JSON");
+      }
+    });
+  });
+  req.on("error", function(e) {
+    log.error("Failed to load JSON");
   });
 
   bot.register("w", /(.+)?/gi, onWeather);

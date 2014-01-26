@@ -8,11 +8,10 @@ const shared  = require("./shared");
 const REMOVE  = irc.STATUS.REMOVE;
 const STOP    = irc.STATUS.STOP;
 const SUCCESS = irc.STATUS.SUCCESS;
-const forMe   = shared.forMe;
 
 function load(bot) {
   // Join a channel.
-  bot.match(/\bjoin\s+(\S+)\s*$/i, forMe, function(msg, chan) {
+  bot.register("join", /(\S+)/, function(msg, chan) {
     const from = msg.from.nick;
     if (bot.channels.has(irc.id(chan))) {
       msg.reply("I am already in " + chan + ".");
@@ -29,7 +28,7 @@ function load(bot) {
   });
 
   // Leave a channel.
-  bot.match(/\b(?:part|leave)\s+(\S+)\s*$/i, forMe, function(msg, chan) {
+  bot.register("part", /(\S+)/, function(msg, chan) {
     if (!bot.channels.has(irc.id(chan))) {
       msg.reply("I am not in %s.", chan);
       return STOP;
@@ -40,7 +39,7 @@ function load(bot) {
   });
 
   // Say something.
-  bot.match(/\bsay\s+(\S+)\s+(.+)*$/i, forMe, function(msg, chan, text) {
+  bot.register("say", /(\S+)\s+(.+)/i, function(msg, chan, text) {
     const chanObj = bot.channels.get(irc.id(chan));
     if (chanObj) {
       chanObj.say(text);
@@ -52,7 +51,7 @@ function load(bot) {
   });
 
   // Quit.
-  bot.match(/\bquit(?:\s+(.+))?\s*$/i, forMe, function(msg, reason) {
+  bot.register("quit", /(.+)?/, function(msg, reason) {
     bot.quit(reason ? reason : msg.from.nick + " told me to quit, bye!");
     return STOP | REMOVE;
   });

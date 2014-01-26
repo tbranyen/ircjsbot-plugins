@@ -102,7 +102,7 @@ function add(bot, msg, name, note) {
     return irc.STATUS.STOP;
   }
   if (irc.id(name) === bot.user.id) {
-    msg.reply("\x01ACTION explodes\x01");
+    bot.send(irc.message(irc.COMMAND.PRIVMSG, [msg.params[0], ":\x01ACTION explodes\x01"]));
     return irc.STATUS.STOP;
   }
   const rnote = new Note(from, key, note);
@@ -114,8 +114,8 @@ function add(bot, msg, name, note) {
 
 function load(bot) {
   bot.match(/^(?:(?!\bread\b).)*$/, notify);
-  bot.match(/^:[!,./\?@`]tell\s+(\S+)\W?\s+(.+)\s*$/i, add.bind(null, bot));
-  bot.match(/^:[!,./\?@`]read[\W\s]*$/i, read.bind(null, bot));
+  bot.register("read", /(?:)/, read.bind(null, bot));
+  bot.register("tell", /(\S+)\s+(.+)\s*$/i, add.bind(null, bot));
 
   return irc.STATUS.SUCCESS;
 }

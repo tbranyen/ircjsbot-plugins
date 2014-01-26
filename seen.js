@@ -106,7 +106,7 @@ function remember(msg) {
 
 function load(bot) {
   bot.match(irc.EVENT.ANY, remember);
-  bot.match(/^:(?:\S+)?\W?\bseen\s+(\S+)\W?(?:\s+(\d+))?\s*$/i, shared.forMe, function(msg, nick, i) {
+  bot.register("seen", /(\S+)\W?(?:\s+(\d+))?/, function(msg, nick, i) {
     return seen(bot, msg, nick, i);
   });
 

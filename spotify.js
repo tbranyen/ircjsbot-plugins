@@ -141,7 +141,7 @@ function load(bot) {
   const searchRE =
     /(?:(album|artist|track)\s+)?([^@#]+)(?:\s*#([1-9]\d*))?/;
   const lookupRE =
-    /\b(?:open.spotify.com|spotify)[/:](album|artist|track)[/:](\S+)/;
+    /\b(?:(open|play).spotify.com|spotify)[/:](album|artist|track)[/:](\S+)/;
   bot.register("spotify", searchRE, search);
   bot.match(lookupRE, lookup);
   return SUCCESS;

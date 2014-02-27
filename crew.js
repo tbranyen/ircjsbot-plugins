@@ -19,7 +19,7 @@ const redisClient = shared.redis.client;
 function prettyPrint(data) {
   const ret = [];
   for (let k in data) {
-    if (data.hasOwnProperty(k)) {
+    if (data.hasOwnProperty(k) && k !== "imgUrl") {
       ret.push(k, "→", data[k], "•");
     }
   }
@@ -38,7 +38,11 @@ function onFinger(msg, nick) {
       msg.reply("No idea who %s is.", nick);
       return;
     }
-    msg.reply(prettyPrint(JSON.parse(res)));
+    var data = JSON.parse(res);
+    if (data.imgUrl && data.imgUrl !== "") {
+      msg.reply(data.imgUrl)
+    }
+    msg.reply(prettyPrint(data));
   });
   return irc.STATUS.STOP;
 }
